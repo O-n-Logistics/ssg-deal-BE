@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: user_service
+
+  data:
+    redis:
+      host: ENC(zvsZXeZsqV8e+HAQSzWlmbbXbEgF1HGsaq0zTn5bp4BtDLCUQSwCyD+SLrldFO4bZxr9vNf1DtKDzWQKeDQ+Lg==)
+      port: 6379
+      username: ENC(GE184hrCtXCl6Z2T2+vzcg==)
+      password: ENC(9nZh/bwOejIkPAK+drrlLw==)
+
+  cloud:
+    gateway:
+      auth:
+        secret:
+          key: ENC(HI4A/uV5RCH/wOUjxaZDApv6DlH9ANhHYK87ojAyzTI=)
