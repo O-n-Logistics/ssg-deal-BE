@@ -1,15 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.4'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
-
-ext {
-    springCloudVersion = "2024.0.1"
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
 }
 
 group = 'on.ssgdeal'
-version = '0.0.1-SNAPSHOT'
+version = '1.0-SNAPSHOT'
 
 java {
     toolchain {
@@ -17,17 +13,14 @@ java {
     }
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
+    implementation platform("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -35,11 +28,10 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // spring cloud
-    implementation platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
 }
 
-tasks.named('test') {
+test {
     useJUnitPlatform()
 }
