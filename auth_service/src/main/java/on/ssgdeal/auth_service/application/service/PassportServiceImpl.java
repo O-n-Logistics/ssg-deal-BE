@@ -7,7 +7,7 @@ import on.ssgdeal.auth_service.infrastructure.client.user_service.UserClientServ
 import on.ssgdeal.auth_service.infrastructure.client.user_service.feign.dto.UserFindByIdResponse;
 import on.ssgdeal.auth_service.infrastructure.security.jwt.JwtUtil;
 import on.ssgdeal.auth_service.infrastructure.security.passport.Passport;
-import on.ssgdeal.auth_service.infrastructure.security.passport.PassportUtil;
+import on.ssgdeal.auth_service.infrastructure.security.passport.PassportUtilForAuth;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Slf4j(topic = "PassportServiceImpl")
 public class PassportServiceImpl implements PassportService {
 
-    private final PassportUtil passportUtil;
+    private final PassportUtilForAuth passportUtilForAuth;
     private final JwtUtil jwtUtil;
     private final UserClientService userClientService;
     @Value("${passport.expiration.generation}")
@@ -26,7 +26,7 @@ public class PassportServiceImpl implements PassportService {
 
     @Override
     public Passport getPassportByPassportId(String passportId) {
-        return passportUtil.getPassportById(passportId);
+        return passportUtilForAuth.getPassportById(passportId);
     }
 
     public String createAndStorePassport(String token, Long userId) {
@@ -36,39 +36,40 @@ public class PassportServiceImpl implements PassportService {
         String role = claims.get("role", String.class);
         Passport passport = Passport.from(dto, username, role);
 
-        return passportUtil.createPassport(token, passport, passportExpirationTime);
+        return passportUtilForAuth.createPassport(token, passport, passportExpirationTime);
     }
 
     @Override
     public String getPassportIdByRefreshToken(String token) {
-        return passportUtil.getPassportKeyByRefreshToken(token);
+        return passportUtilForAuth.getPassportKeyByRefreshToken(token);
     }
 
     @Override
     public Passport getPassportByRefreshToken(String token) {
-        return passportUtil.getPassportByRefreshToken(token);
+        return passportUtilForAuth.getPassportByRefreshToken(token);
     }
 
     @Override
     public void expirePassportByRefreshToken(String refreshToken) {
-        passportUtil.expirePassportByRefreshToken(refreshToken, passportExpirationExpected);
+        passportUtilForAuth.expirePassportByRefreshToken(refreshToken, passportExpirationExpected);
     }
 
     @Override
     public void deletePassportByRefreshToken(String refreshToken) {
-        passportUtil.deletePassport(refreshToken);
+        passportUtilForAuth.deletePassport(refreshToken);
     }
 
     @Override
     public String createAndStoreNewPassportByRefreshToken(String refreshToken,
         String newRefreshToken) {
         Passport passport = getPassportByRefreshToken(refreshToken);
-        return passportUtil.createPassport(newRefreshToken, passport, passportExpirationTime);
+        return passportUtilForAuth.createPassport(newRefreshToken, passport,
+            passportExpirationTime);
     }
 
     @Override
     public void deletePassportByPassportId(String passportId) {
-        passportUtil.deletePassportByPassportId(passportId);
+        passportUtilForAuth.deletePassportByPassportId(passportId);
     }
 
 }

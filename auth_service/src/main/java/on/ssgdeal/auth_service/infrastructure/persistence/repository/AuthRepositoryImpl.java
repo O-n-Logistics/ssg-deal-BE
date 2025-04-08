@@ -6,16 +6,13 @@ import on.ssgdeal.auth_service.domain.entity.Auth;
 import on.ssgdeal.auth_service.domain.repository.AuthRepository;
 import on.ssgdeal.auth_service.domain.vo.Username;
 import on.ssgdeal.auth_service.infrastructure.persistence.jpa.AuthJpaRepository;
-import on.ssgdeal.auth_service.infrastructure.persistence.jpa.querydsl.AuthQueryDslRepository;
-import on.ssgdeal.auth_service.infrastructure.persistence.jpa.querydsl.AuthQueryDslRepositoryImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class AuthRepositoryImpl implements AuthRepository, AuthQueryDslRepository {
+public class AuthRepositoryImpl implements AuthRepository {
 
     private final AuthJpaRepository authJpaRepository;
-    private final AuthQueryDslRepositoryImpl authQueryDslRepository;
 
     @Override
     public Auth save(Auth auth) {
@@ -24,7 +21,7 @@ public class AuthRepositoryImpl implements AuthRepository, AuthQueryDslRepositor
 
     @Override
     public Optional<Auth> findById(Long id) {
-        return authQueryDslRepository.findById(id);
+        return authJpaRepository.findById(id);
     }
 
     @Override

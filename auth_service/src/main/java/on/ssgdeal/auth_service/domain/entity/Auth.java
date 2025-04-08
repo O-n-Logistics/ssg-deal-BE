@@ -18,14 +18,12 @@ import on.ssgdeal.auth_service.domain.vo.Username;
 import on.ssgdeal.auth_service.infrastructure.client.user_service.feign.dto.UserCreateResponse;
 import on.ssgdeal.common.auth.enums.AuthRole;
 import on.ssgdeal.common.jpa.BaseEntity;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "p_auth")
+@Table(name = "auth")
 @Builder(access = AccessLevel.PROTECTED)
 public class Auth extends BaseEntity {
 
@@ -40,7 +38,6 @@ public class Auth extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private AuthRole role;
 
     public static Auth from(

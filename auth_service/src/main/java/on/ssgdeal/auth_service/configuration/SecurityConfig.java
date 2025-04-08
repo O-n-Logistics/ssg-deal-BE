@@ -3,7 +3,7 @@ package on.ssgdeal.auth_service.configuration;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.auth_service.application.service.PassportService;
 import on.ssgdeal.auth_service.infrastructure.security.cookie.CookieUtil;
-import on.ssgdeal.auth_service.infrastructure.security.details.AuthDetailsService;
+import on.ssgdeal.auth_service.infrastructure.security.details.AuthDetailsServiceImpl;
 import on.ssgdeal.auth_service.infrastructure.security.jwt.JwtAuthenticationFilter;
 import on.ssgdeal.auth_service.infrastructure.security.jwt.JwtAuthorizationFilter;
 import on.ssgdeal.auth_service.infrastructure.security.jwt.JwtUtil;
@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
-    private final AuthDetailsService authDetailsService;
+    private final AuthDetailsServiceImpl authDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final PassportService passportService;
 

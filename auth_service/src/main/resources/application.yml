@@ -1,0 +1,45 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: auth_service
+
+  data:
+    redis:
+      host: ENC(zvsZXeZsqV8e+HAQSzWlmbbXbEgF1HGsaq0zTn5bp4BtDLCUQSwCyD+SLrldFO4bZxr9vNf1DtKDzWQKeDQ+Lg==)
+      port: 6379
+      username: ENC(GE184hrCtXCl6Z2T2+vzcg==)
+      password: ENC(9nZh/bwOejIkPAK+drrlLw==)
+
+  datasource:
+    url: jdbc:mysql://localhost:13306/onlogistics
+    username: ENC(g9PXMWVO5Hzcl88mPDXDVQ==)
+    password: ENC(SzFNDgC//YBbb9TJ7Bne4Cv1KM24A8WX)
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  cloud:
+    config:
+      enabled: false
+
+
+jwt:
+  secret:
+    key: ENC(2uuoncCRKwGUefB7oMr59hH/fP+END/NGxhJsdt2MsaIEiVSByZsbfh3vcmhh4FIo6Cf3u4ZhS9GiF+0zJL7mWtIN1BJYMD8GnVReruCWy9sKciYXbzm91GG8ZPMNAcDQJbI4f9P753yNEypXE0Coi+kvXC+pUS9GAKzYUGf9jd/MHUmfcwi2gOWASf0JJ5h)
+  access:
+    expiration: 300000 # 5 * 60 * 1000, 5분
+  refresh:
+    expiration: 3600000 # 60 * 60 * 1000, 1시간
+
+passport:
+  expiration:
+    generation: 3600000 # 60 * 60 * 1000, 1시간
+    expected: 60000 # 60 * 1000, 1분
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

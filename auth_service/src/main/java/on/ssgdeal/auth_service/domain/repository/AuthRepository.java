@@ -4,7 +4,6 @@ import java.util.Optional;
 import on.ssgdeal.auth_service.domain.entity.Auth;
 import on.ssgdeal.auth_service.domain.vo.Username;
 
-
 public interface AuthRepository {
 
     Auth save(Auth auth);

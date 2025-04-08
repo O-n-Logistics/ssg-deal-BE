@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j(topic = "PassportUtil")
-public class PassportUtil {
+@Slf4j(topic = "PassportUtilForAuth")
+public class PassportUtilForAuth {
 
     private static final String PASSPORT_KEY_PREFIX = "passport:";
     private final RedisTemplate<String, String> redisTemplate;
