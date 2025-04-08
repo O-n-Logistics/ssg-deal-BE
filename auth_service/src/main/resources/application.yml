@@ -1,15 +1,17 @@
 server:
-  port: 8081
+  port: 8080
+
 spring:
   application:
     name: auth_service
-
+  config:
+    import: "configserver:"
   data:
     redis:
-      host: ENC(zvsZXeZsqV8e+HAQSzWlmbbXbEgF1HGsaq0zTn5bp4BtDLCUQSwCyD+SLrldFO4bZxr9vNf1DtKDzWQKeDQ+Lg==)
-      port: 6379
-      username: ENC(GE184hrCtXCl6Z2T2+vzcg==)
-      password: ENC(9nZh/bwOejIkPAK+drrlLw==)
+      host: host
+      port: 1234
+      username: username
+      password: password
 
   datasource:
     url: jdbc:mysql://localhost:13306/onlogistics
@@ -23,6 +25,9 @@ spring:
 
   cloud:
     config:
+      discovery:
+        enabled: true
+        service-id: config_service
       enabled: false
 
 
