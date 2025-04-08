@@ -15,8 +15,13 @@ public class Passport {
     private String nickname;
     private String slackEmail;
 
-    public static Passport of(Long userId, String nickname, String SlackEmail, String username,
-        String role) {
+    public static Passport of(
+        Long userId,
+        String nickname,
+        String SlackEmail,
+        String username,
+        String role
+    ) {
         return Passport.builder()
             .userId(userId)
             .username(username)
