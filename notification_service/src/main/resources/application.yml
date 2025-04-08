@@ -2,6 +2,7 @@ spring:
   application:
     name:
       notification_service
+
   datasource:
     url: ENC(pLlxm5aGj5SQ2rdb3c2rRLrJiOSLgXbO3227FIAOdJf7x+G1LxYJ86lLRBhSbHgu)
     username: ENC(7z6NDeo1BKW2uxNRR0vBbg==)
@@ -22,7 +23,11 @@ spring:
       port: 6379
       username: ENC(GE184hrCtXCl6Z2T2+vzcg==)
       password: ENC(9nZh/bwOejIkPAK+drrlLw==)
-
+  cloud:
+    config:
+      enabled: false
+  profiles:
+    active: dev
 
 server:
   port: 8020
