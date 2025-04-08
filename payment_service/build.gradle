@@ -20,10 +20,6 @@ configurations {
 }
 
 dependencies {
-    // common
-    implementation project(':common')
-    // jasypt
-    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
     // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // lombok
