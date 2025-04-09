@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.notification_service.application.service.SlackClient;
+import on.ssgdeal.notification_service.exception.NotificationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -39,9 +40,8 @@ public class SlackClientImpl implements SlackClient {
             return response.get("user").get("id").asText();
         } else {
             log.warn("슬랙 유저 ID 조회를 실패했습니다.");
-            throw new RuntimeException("슬랙 이메일로 슬랙 유저 ID 조회를 실패했습니다.");
+            throw new NotificationException.SlackUserLookupFailedException();
         }
-
     }
 
     /**
@@ -59,7 +59,7 @@ public class SlackClientImpl implements SlackClient {
             return response.get("channel").get("id").asText();
         } else {
             log.warn("슬랙 유저 ID 조회를 실패했습니다.");
-            throw new RuntimeException("슬랙 유저 ID로 채널 오픈을 실패했습니다.");
+            throw new NotificationException.SlackChannelOpenFailedException();
         }
     }
 
@@ -88,11 +88,10 @@ public class SlackClientImpl implements SlackClient {
                 return response.get("ts").asText();
             } else {
                 log.warn("슬랙 API가 메시지 전송을 실패했습니다.");
-                throw new RuntimeException("슬랙 API가 메시지 전송을 실패했습니다.");
+                throw new NotificationException.SlackMessageSendFailedException();
             }
         } catch (Exception e) {
-            throw new RuntimeException("슬랙 메시지 전송을 실패했습니다.");
+            throw new NotificationException.SlackApiErrorException();
         }
-
     }
 }

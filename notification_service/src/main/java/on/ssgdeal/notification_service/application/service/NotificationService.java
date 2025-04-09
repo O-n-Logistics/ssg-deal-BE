@@ -8,6 +8,7 @@ import on.ssgdeal.notification_service.domain.entity.NotificationTemplate;
 import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
 import on.ssgdeal.notification_service.domain.repository.NotificationRepository;
 import on.ssgdeal.notification_service.domain.repository.NotificationTemplateRepository;
+import on.ssgdeal.notification_service.exception.NotificationException;
 import on.ssgdeal.notification_service.infrastructure.client.slack.converter.SlackTimestampToKSTConverter;
 import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationResponse;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,6 @@ public class NotificationService {
         NotificationTemplate template = getOrThrowNotificationTemplate(NotificationTemplateType.ORDER_COMPLETED);
         String content = createOrderCompletedSlackNotification(requestDto, template.getContent());
         String timestamp = slackClient.sendNotificationToUser(requestDto.receiverSlackEmail(), content);
-
         LocalDateTime sendAt = slackTimestampToKSTConverter.convertToKST(timestamp);
         Notification notification = Notification.create(requestDto, content, template, sendAt);
         notificationRepository.save(notification);
@@ -47,6 +47,6 @@ public class NotificationService {
     private NotificationTemplate getOrThrowNotificationTemplate(NotificationTemplateType type) {
         return notificationTemplateRepository
                 .findByType(type)
-                .orElseThrow(() -> new RuntimeException("알림 템플릿이 존재하지 않습니다."));
+                .orElseThrow(NotificationException.NotificationTemplateNotFoundException::new);
     }
 }
