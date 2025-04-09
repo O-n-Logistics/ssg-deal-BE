@@ -4,12 +4,15 @@ configurations {
     }
 }
 
-ext {
-    set('springCloudVersion', "2024.0.0")
-    set('querydslVersion', "5.0.0")
-}
-
 dependencies {
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     // redis
@@ -20,8 +23,7 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     // spring cloud
-    implementation platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation platform("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 }
 
@@ -29,5 +31,3 @@ dependencies {
 tasks.withType(JavaCompile).configureEach {
     options.annotationProcessorPath = configurations.annotationProcessor
 }
-
-bootJar { enabled = false }
