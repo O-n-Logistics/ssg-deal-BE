@@ -14,6 +14,9 @@ public enum OrderExceptionCode implements ExceptionCode {
     ORDER_FORMAT_TOTAL_ORDER_NUMBER(HttpStatus.BAD_REQUEST, "주문 번호 형식이 올바르지 않습니다."),
     ORDER_NULL_STATUS(HttpStatus.BAD_REQUEST, "주문 상태는 필수 입력 값입니다."),
     ORDER_MAX_DELIVERY_REQUEST(HttpStatus.BAD_REQUEST, "주문 요청 사항은 20자 이상을 넘어갈 수 없습니다."),
+    ORDER_PROMOTION_FINISHED(HttpStatus.BAD_REQUEST, "프로모션이 종료된 상품이 포함되어 있어 주문을 할 수 없습니다."),
+    ORDER_PROMOTION_STOCK_OVER(HttpStatus.BAD_REQUEST, "프로모션 상품의 재고가 소진되어 주문할 수 없습니다."),
+    ORDER_VALID_DESTINATION(HttpStatus.BAD_REQUEST, "배송지를 다시 확인해 주세요."),
     ;
     private final HttpStatus httpStatus;
     private final String message;

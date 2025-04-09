@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.sql.Timestamp;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.common.jpa.BaseEntity;
 import on.ssgdeal.order_service.domain.enums.PaymentMethod;
+import on.ssgdeal.order_service.domain.enums.PaymentStatus;
+import on.ssgdeal.order_service.domain.enums.PaymentType;
 import org.hibernate.annotations.SQLRestriction;
 
 
@@ -36,13 +39,27 @@ public class TotalOrderPayment extends BaseEntity {
     private TotalOrder totalOrder;
 
     private Long paymentId;
-    private Long paymentAmount;
-    private Long paymentKey;
+    
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    private String paymentStatus;
+    private Long paymentAmount;
+    private Long paymentKey;
+    private Timestamp paymentDate;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
     private String failureCode;
+
+    public static TotalOrderPayment create(TotalOrder totalOrder) {
+        return TotalOrderPayment.builder()
+            .totalOrder(totalOrder)
+            .paymentStatus(PaymentStatus.PENDING)
+            .build();
+    }
 
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.common.jpa.BaseEntity;
+import on.ssgdeal.order_service.domain.entity.dtos.CreateTotalOrderDto;
 import on.ssgdeal.order_service.domain.enums.TotalOrderStatus;
 import on.ssgdeal.order_service.domain.vo.TotalOrderNumber;
 import on.ssgdeal.order_service.domain.vo.TotalPrice;
@@ -50,19 +52,55 @@ public class TotalOrder extends BaseEntity {
     @OneToOne(mappedBy = "totalOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private Orderer orderer;
 
+    @Builder.Default
     @OneToMany(mappedBy = "totalOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<TotalOrderPayment> totalOrderPayments;
+    private List<TotalOrderPayment> totalOrderPayments = new ArrayList<>();
 
-    public void addDependencies(Orderer orderer, List<TotalOrderPayment> totalOrderPayments) {
+    @Builder.Default
+    @OneToMany(mappedBy = "totalOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
+
+    public static TotalOrder create(CreateTotalOrderDto createTotalOrderDto) {
+        return TotalOrder.builder()
+            .totalOrderNumber(new TotalOrderNumber(createTotalOrderDto.totalOrderNumber()))
+            .status(TotalOrderStatus.PENDING)
+            .price(new TotalPrice(createTotalOrderDto.price()))
+            .build();
+    }
+
+    public void addDependencies(
+        Orderer orderer,
+        List<TotalOrderPayment> totalOrderPayments,
+        List<Order> orders
+    ) {
         addOrdererDependency(orderer);
         addTotalOrderPaymentsDependency(totalOrderPayments);
+        addOrdersDependency(orders);
+    }
+
+    public void addDependencies(
+        Orderer orderer,
+        TotalOrderPayment totalOrderPayments,
+        List<Order> orders
+    ) {
+        addOrdererDependency(orderer);
+        addTotalOrderPaymentsDependency(totalOrderPayments);
+        addOrdersDependency(orders);
     }
 
     private void addOrdererDependency(Orderer orderer) {
         this.orderer = orderer;
     }
 
+    private void addOrdersDependency(List<Order> orders) {
+        this.orders = orders;
+    }
+
     private void addTotalOrderPaymentsDependency(List<TotalOrderPayment> totalOrderPayments) {
         this.totalOrderPayments = totalOrderPayments;
+    }
+
+    private void addTotalOrderPaymentsDependency(TotalOrderPayment totalOrderPayment) {
+        this.totalOrderPayments.add(totalOrderPayment);
     }
 }

@@ -2,7 +2,6 @@ package on.ssgdeal.order_service.domain.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,7 @@ public class DeliveryRequest {
 
     private static final int LENGTH = 20;
 
-    @Column(name = "delivery_request", nullable = false, length = LENGTH)
+    @Column(name = "delivery_request", length = LENGTH)
     private String value;
 
     public DeliveryRequest(final String value) {

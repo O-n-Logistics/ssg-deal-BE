@@ -13,6 +13,9 @@ spring:
       port: 6379
       username: ENC(GE184hrCtXCl6Z2T2+vzcg==)
       password: ENC(9nZh/bwOejIkPAK+drrlLw==)
+  cloud:
+    config:
+      enabled: false
   jpa:
     hibernate:
       ddl-auto: update

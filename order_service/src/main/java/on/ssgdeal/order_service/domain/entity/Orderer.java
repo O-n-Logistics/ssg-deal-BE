@@ -45,6 +45,7 @@ public class Orderer extends BaseEntity {
             .nickname(dto.nickname())
             .slackEmail(dto.slackEmail())
             .destination(dto.destination())
+            .deliveryRequest(new DeliveryRequest(dto.deliveryRequest()))
             .build();
     }
 }

@@ -8,12 +8,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderProductDto;
 import org.hibernate.annotations.SQLRestriction;
 
 @Getter
@@ -32,16 +32,18 @@ public class OrderProduct {
     @JoinColumn(name = "orders_id")
     private Order order;
 
+    private Long productId;
+
     @Column(nullable = false)
     private String productName;
 
     private String previewUrl;
 
     @Column(nullable = false)
-    private BigDecimal originalPrice;
+    private Long originalPrice;
 
     @Column(nullable = false)
-    private BigDecimal promotionPrice;
+    private Long promotionPrice;
 
     @Column(nullable = false)
     private Long optionId;
@@ -50,8 +52,23 @@ public class OrderProduct {
     private String optionName;
 
     @Column(nullable = false)
-    private BigDecimal extraPrice;
+    private Long extraPrice;
 
     @Column(nullable = false)
-    private BigDecimal totalPrice;
+    private Long totalPrice;
+
+    public static OrderProduct create(Order order, CreateOrderProductDto dto) {
+        return OrderProduct.builder()
+            .order(order)
+            .productId(dto.productId())
+            .productName(dto.productName())
+            .previewUrl(dto.previewUrl())
+            .originalPrice(dto.originalPrice())
+            .promotionPrice(dto.promotionPrice())
+            .optionId(dto.optionId())
+            .optionName(dto.optionName())
+            .extraPrice(dto.extraPrice())
+            .totalPrice(dto.totalPrice())
+            .build();
+    }
 }
