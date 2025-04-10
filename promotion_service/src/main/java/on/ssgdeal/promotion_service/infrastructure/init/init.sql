@@ -1,111 +1,138 @@
+-- 더미 데이터 삽입 시작
+
 START TRANSACTION;
 
--- Promotion 더미 데이터
+-- 기존 데이터 삭제
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE product_option;
+TRUNCATE TABLE product;
+TRUNCATE TABLE company;
+TRUNCATE TABLE promotion;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- 프로모션 데이터
 INSERT INTO promotion (
-    id, title, preview, content, content_image_url, status,
+    id, title, preview_url, content, content_image_url, status,
     start_promotion_date, end_promotion_date,
     created_at, created_by, updated_at, updated_by,
     is_deleted
 ) VALUES
-      (1, '봄맞이 세일', '지금 쇼핑하면 최대 50% 할인!', '봄 시즌 프로모션 내용입니다.', 'https://example.com/image1.jpg', 'IN_PROGRESS',
-       CURRENT_TIMESTAMP - INTERVAL 1 DAY, CURRENT_TIMESTAMP + INTERVAL 10 DAY,
-       CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+-- 기존 3건
+(1, '봄 패션 위크', '봄 옷 최대 50% 세일!', '트렌디한 봄 패션 아이템을 만나보세요.', 'https://example.com/spring-fashion.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 2 DAY, CURRENT_TIMESTAMP + INTERVAL 10 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(2, '브런치 카페 페스티벌', '브런치 세트 할인 중!', '감성 가득한 카페 메뉴를 즐겨보세요.', 'https://example.com/cafe-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 1 DAY, CURRENT_TIMESTAMP + INTERVAL 7 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(3, '뷰티 빅 세일', '화장품 최대 70% 할인!', '인기 화장품 브랜드 총출동!', 'https://example.com/beauty-sale.jpg', 'PENDING',
+ CURRENT_TIMESTAMP + INTERVAL 1 DAY, CURRENT_TIMESTAMP + INTERVAL 15 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
 
-      (2, '여름 바캉스 특가', '휴가 준비는 지금부터!', '여름 프로모션 상세 설명입니다.', 'https://example.com/image2.jpg', 'IN_PROGRESS',
-       CURRENT_TIMESTAMP + INTERVAL 5 DAY, CURRENT_TIMESTAMP + INTERVAL 15 DAY,
-       CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+-- 추가 10건
+(4, '프랑스식 갈릭 바게트 할인', '겉바속촉! 바게트 할인 중', '전통 프랑스식 바게트를 최대 20% 할인된 가격으로 만나보세요.', 'https://example.com/baguette-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 1 DAY, CURRENT_TIMESTAMP + INTERVAL 5 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(5, '주방용품 기획전', '주방 조리도구 세트 특가!', '원목으로 만든 조리도구 세트를 특별한 가격에!', 'https://example.com/kitchen-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 2 DAY, CURRENT_TIMESTAMP + INTERVAL 8 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(6, '캠핑 준비는 여기서!', '피크닉&캠핑템 할인전', '캠핑 테이블, 피크닉 매트를 저렴하게 만나보세요.', 'https://example.com/camping-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 3 DAY, CURRENT_TIMESTAMP + INTERVAL 4 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(7, '빈티지 감성 유리컵 할인전', '빈티지 유리컵 4개 세트', '레트로 감성 가득한 유리컵이 20% 할인 중!', 'https://example.com/glass-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 5 DAY, CURRENT_TIMESTAMP + INTERVAL 2 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(8, '리빙 소품 할인', '마카롱 수저받침 모음전', '컬러풀한 리빙 감성 소품 할인!', 'https://example.com/living-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 1 DAY, CURRENT_TIMESTAMP + INTERVAL 9 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(9, '욕실 디퓨저 특가', '은은한 향기로 집안을 채우세요.', '아로마 디퓨저 2종 최대 20% 할인', 'https://example.com/diffuser-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 2 DAY, CURRENT_TIMESTAMP + INTERVAL 10 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+(10, '홈카페 소품전', '라탄 트레이 할인!', '홈카페 감성 인테리어 소품을 만나보세요.', 'https://example.com/homecafe-event.jpg', 'IN_PROGRESS',
+ CURRENT_TIMESTAMP - INTERVAL 1 DAY, CURRENT_TIMESTAMP + INTERVAL 12 DAY,
+ CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
 
-      (3, '가을 신상품 출시', '가을 트렌드를 만나보세요.', '가을 패션, 리빙 신상품 프로모션.', 'https://example.com/image3.jpg', 'PENDING',
-       CURRENT_TIMESTAMP - INTERVAL 3 DAY, CURRENT_TIMESTAMP + INTERVAL 20 DAY,
-       CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
-      (4, '겨울 한정 기획전', '겨울 필수템 모음전!', '한파 대비 기획전입니다.', 'https://example.com/image4.jpg', 'FINISHED',
-       CURRENT_TIMESTAMP - INTERVAL 30 DAY, CURRENT_TIMESTAMP - INTERVAL 1 DAY,
-       CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
-      (5, '신년 맞이 혜택', '2025년 새해 혜택 받고 시작하세요!', '새해 프로모션, 쿠폰, 포인트 지급.', 'https://example.com/image5.jpg', 'FINISHED',
-       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL 7 DAY,
-       CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
-
--- Company 더미 데이터 (promotion_id 순서 보장)
+-- 업체 데이터
 INSERT INTO company (
     id, name, logo_url, manager_id, promotion_id,
     created_at, created_by, updated_at, updated_by,
     is_deleted
 ) VALUES
--- promotion_id = 1
-(1, '봄나들이 마켓', 'https://example.com/logo1.png', 1, 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(2, '벚꽃몰', 'https://example.com/logo2.png', 2, 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(3, '가드닝 스토어', 'https://example.com/logo3.png', 3, 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(4, '스프링리빙', 'https://example.com/logo4.png', 4, 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (1, '트렌드클로젯', 'https://example.com/fashion-logo.png', 101, 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (2, '브런치타임', 'https://example.com/cafe-logo.png', 102, 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (3, '뷰티하우스', 'https://example.com/beauty-logo.png', 103, 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (4, '바게뜨앤코', 'https://example.com/baguette-logo.png', 104, 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (5, '키친라이프', 'https://example.com/kitchen-logo.png', 105, 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (6, '캠프존', 'https://example.com/camp-logo.png', 106, 6, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (7, '빈티지글라스', 'https://example.com/glass-logo.png', 107, 7, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (8, '리빙조이', 'https://example.com/living-logo.png', 108, 8, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (9, '디퓨저코리아', 'https://example.com/diffuser-logo.png', 109, 9, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (10, '홈카페리빙', 'https://example.com/homecafe-logo.png', 110, 10, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
 
--- promotion_id = 2
-(5, '썸머스토어', 'https://example.com/logo5.png', 5, 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(6, '비치웨어샵', 'https://example.com/logo6.png', 6, 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(7, '서머가전몰', 'https://example.com/logo7.png', 7, 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(8, '바캉스팜', 'https://example.com/logo8.png', 8, 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- promotion_id = 3
-(9, '가을옷장', 'https://example.com/logo9.png', 9, 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(10, '어텀홈', 'https://example.com/logo10.png', 10, 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(11, '브라운컬렉션', 'https://example.com/logo11.png', 11, 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(12, '코지샵', 'https://example.com/logo12.png', 12, 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- promotion_id = 4
-(13, '윈터에디션', 'https://example.com/logo13.png', 13, 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(14, '눈꽃마켓', 'https://example.com/logo14.png', 14, 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(15, '한파대비몰', 'https://example.com/logo15.png', 15, 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(16, '따숩상점', 'https://example.com/logo16.png', 16, 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- promotion_id = 5
-(17, '해돋이샵', 'https://example.com/logo17.png', 17, 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(18, '새해마켓', 'https://example.com/logo18.png', 18, 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(19, '2025키트몰', 'https://example.com/logo19.png', 19, 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(20, '혜택상점', 'https://example.com/logo20.png', 20, 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
-
--- Product 더미 데이터
+-- 상품 데이터
 INSERT INTO product (
     id, name, original_price, promotion_price,
     preview_url, content_image_url, content, company_id,
     created_at, created_by, updated_at, updated_by,
     is_deleted
 ) VALUES
--- Company 1 ~ 3 (promotion_id = 1)
-(1, '벚꽃 에코백', 10000, 8000, 'https://example.com/preview1.jpg', 'https://example.com/content1.jpg', '벚꽃 시즌용 에코백입니다.', 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(2, '봄꽃 파자마', 20000, 15000, 'https://example.com/preview2.jpg', 'https://example.com/content2.jpg', '봄밤용 편한 파자마.', 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(3, '가든 장갑', 15000, 12000, 'https://example.com/preview3.jpg', 'https://example.com/content3.jpg', '원예 작업용 장갑입니다.', 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(4, '플로럴 워터병', 18000, 16000, 'https://example.com/preview4.jpg', 'https://example.com/content4.jpg', '화사한 디자인의 워터병.', 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(5, '썬캡', 25000, 21000, 'https://example.com/preview5.jpg', 'https://example.com/content5.jpg', '햇빛을 막아주는 여름용 썬캡.', 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(6, '쿨링 티셔츠', 30000, 27000, 'https://example.com/preview6.jpg', 'https://example.com/content6.jpg', '통풍이 잘되는 기능성 티셔츠.', 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
+      (1, '플로럴 봄 원피스', 55000, 39000, 'https://example.com/dress-preview.jpg', 'https://example.com/dress-detail.jpg', '화사한 봄 원피스입니다.', 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (2, '라이트 데님 자켓', 72000, 52000, 'https://example.com/jacket-preview.jpg', 'https://example.com/jacket-detail.jpg', '간절기용 가벼운 자켓.', 1, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (3, '브런치 세트A', 18000, 15000, 'https://example.com/brunch-preview.jpg', 'https://example.com/brunch-detail.jpg', '샐러드 + 샌드위치 + 커피', 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (4, '디저트 플레이트', 12000, 9800, 'https://example.com/dessert-preview.jpg', 'https://example.com/dessert-detail.jpg', '다양한 디저트 구성.', 2, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (5, '촉촉한 수분크림', 30000, 21000, 'https://example.com/cream-preview.jpg', 'https://example.com/cream-detail.jpg', '건조한 피부를 위한 수분크림.', 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (6, '립 틴트 3종 세트', 27000, 18900, 'https://example.com/tint-preview.jpg', 'https://example.com/tint-detail.jpg', '데일리용 틴트 세트.', 3, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (7, '프랑스식 갈릭 바게트', 8000, 6400, 'https://example.com/baguette-preview.jpg', 'https://example.com/baguette-detail.jpg', '바삭하고 고소한 프랑스식 바게트.', 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (8, '레몬 타르트', 9500, 8500, 'https://example.com/tart-preview.jpg', 'https://example.com/tart-detail.jpg', '상큼한 레몬향이 가득한 타르트.', 4, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (9, '원목 주방 조리도구 세트', 35000, 27000, 'https://example.com/wood-utensils-preview.jpg', 'https://example.com/wood-utensils-detail.jpg', '친환경 원목 조리도구 5종 세트.', 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (10, '실리콘 냄비 받침', 5500, 3900, 'https://example.com/silicone-mat-preview.jpg', 'https://example.com/silicone-mat-detail.jpg', '고온에 강한 실리콘 받침.', 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (11, '미니 캠핑 테이블', 42000, 29900, 'https://example.com/camp-table-preview.jpg', 'https://example.com/camp-table-detail.jpg', '가볍고 튼튼한 캠핑용 테이블.', 6, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (12, '피크닉 매트', 26000, 19800, 'https://example.com/picnic-mat-preview.jpg', 'https://example.com/picnic-mat-detail.jpg', '방수 소재의 피크닉 매트.', 6, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (13, '빈티지 유리컵 세트', 24000, 19000, 'https://example.com/glass-preview.jpg', 'https://example.com/glass-detail.jpg', '빈티지 감성 유리컵 4개 세트.', 7, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (14, '마카롱 색감 수저받침', 4200, 3500, 'https://example.com/spoon-rest-preview.jpg', 'https://example.com/spoon-rest-detail.jpg', '알록달록 감성 수저받침.', 8, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (15, '아로마 디퓨저', 19000, 15500, 'https://example.com/diffuser-preview.jpg', 'https://example.com/diffuser-detail.jpg', '은은한 향기의 디퓨저.', 9, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (16, '라탄 트레이', 17000, 13000, 'https://example.com/rattan-tray-preview.jpg', 'https://example.com/rattan-tray-detail.jpg', '자연 감성의 라탄 트레이.', 10, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
 
--- Product Option 더미 데이터
 INSERT INTO product_option (
     id, product_id, option_name, extra_price, product_stock,
     created_at, created_by, updated_at, updated_by,
     is_deleted
 ) VALUES
--- 옵션 for product_id 1
-(1, 1, '벚꽃핑크/L', 0, 100, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(2, 1, '벚꽃핑크/M', 500, 50, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (1, 1, '핑크/M', 0, 100, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (2, 1, '핑크/L', 1000, 80, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (13, 1, '브라운/S', 2000, 80, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (14, 1, '브라운/M', 3000, 80, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (15, 1, '브라운/L', 5000, 80, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (3, 2, 'S 사이즈', 0, 90, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (4, 2, 'M 사이즈', 1500, 50, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (5, 3, '커피 선택 - 아메리카노', 0, 200, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (6, 3, '커피 선택 - 라떼', 500, 150, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (16, 3, '커피 선택 - 바닐라 라떼', 500, 150, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (17, 3, '커피 선택 - 딸기 스무디', 2000, 150, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (7, 4, '초콜릿 조각 케이크', 0, 100, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (8, 4, '치즈 케이크', 700, 70, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (9, 5, '50ml', 0, 300, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (10, 5, '100ml', 5000, 150, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (11, 6, '코랄 핑크', 0, 120, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (12, 6, '레드 오렌지', 0, 130, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (18, 7, '기본형', 0, 50, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (19, 7, '허브향 추가', 1000, 30, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (20, 8, '기본형', 0, 20, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (21, 9, '기본 세트 (5종)', 0, 40, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (22, 9, '고급형 세트 (8종)', 5000, 10, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (23, 11, '블랙', 0, 25, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (24, 11, '우드패턴', 3000, 5, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (25, 13, '4개입 세트', 0, 0, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (26, 14, '핑크', 0, 100, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (27, 14, '민트', 0, 90, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (28, 14, '옐로우', 0, 80, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (29, 15, '라벤더 향', 0, 150, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (30, 15, '시트러스 향', 0, 100, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (31, 16, '원형 (25cm)', 0, 40, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
+      (32, 16, '사각형 (30x20cm)', 2000, 30, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
 
--- 옵션 for product_id 2
-(3, 2, '연노랑/L', 0, 120, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(4, 2, '연노랑/M', 1000, 30, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- 옵션 for product_id 3
-(5, 3, 'S 사이즈', 0, 60, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(6, 3, 'M 사이즈', 200, 40, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- 옵션 for product_id 4
-(7, 4, '투명', 0, 75, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(8, 4, '핑크톤', 500, 25, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- 옵션 for product_id 5
-(9, 5, '화이트', 0, 90, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(10, 5, '네이비', 1500, 10, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-
--- 옵션 for product_id 6
-(11, 6, 'L', 0, 200, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false),
-(12, 6, 'XL', 300, 70, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP, 0, false);
 
 COMMIT;
+
+-- 더미 데이터 삽입 끝
