@@ -1,6 +1,7 @@
 package on.ssgdeal.order_service.domain.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderProductDto;
+import on.ssgdeal.order_service.domain.vo.Quantity;
 import org.hibernate.annotations.SQLRestriction;
 
 @Getter
@@ -36,6 +38,9 @@ public class OrderProduct {
 
     @Column(nullable = false)
     private String productName;
+
+    @Embedded
+    private Quantity quantity;
 
     private String previewUrl;
 
@@ -62,6 +67,7 @@ public class OrderProduct {
             .order(order)
             .productId(dto.productId())
             .productName(dto.productName())
+            .quantity(new Quantity(dto.quantity()))
             .previewUrl(dto.previewUrl())
             .originalPrice(dto.originalPrice())
             .promotionPrice(dto.promotionPrice())
