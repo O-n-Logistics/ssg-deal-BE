@@ -12,6 +12,7 @@ import on.ssgdeal.order_service.application.service.dto.CreateUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.TotalOrderProductInfo;
 import on.ssgdeal.order_service.application.service.dto.TotalOrderProductInfo.ProductInfo;
+import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.domain.entity.Order;
 import on.ssgdeal.order_service.domain.entity.OrderProduct;
 import on.ssgdeal.order_service.domain.entity.Orderer;
@@ -20,6 +21,8 @@ import on.ssgdeal.order_service.domain.entity.TotalOrderPayment;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderDto;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderProductDto;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateTotalOrderDto;
+import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
+import on.ssgdeal.order_service.domain.entity.dtos.mapper.TotalOrderEntityLayerMapper;
 import on.ssgdeal.order_service.domain.repository.TotalOrderRepository;
 import on.ssgdeal.order_service.exception.OrderException;
 import on.ssgdeal.order_service.exception.OrderExceptionCode;
@@ -29,6 +32,8 @@ import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.GetPro
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.GetProductInfoRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.GetProductInfoRequestDto.GetProductDetails;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.InCreaseProductStockRequestDto;
+import on.ssgdeal.order_service.infrastructure.client.slack.dto.TotalOrderCompleteSendInfoDto;
+import on.ssgdeal.order_service.infrastructure.client.slack.feign.dto.OrderCompleteSendSlackRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dto.ValidDestinationRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dto.ValidDestinationResponseDto;
 import on.ssgdeal.order_service.presentation.external.dto.CreateOrderResponse;
@@ -44,6 +49,8 @@ public class OrderServiceImpl implements OrderService {
     private final PromotionService promotionService;
     private final TotalOrderRepository totalOrderRepository;
     private final UserService userService;
+    private final TotalOrderEntityLayerMapper totalOrderEntityLayerMapper;
+    private final SlackService slackService;
 
     @Override
     @Transactional
@@ -87,6 +94,43 @@ public class OrderServiceImpl implements OrderService {
         totalOrderRepository.save(totalOrder);
 
         return CreateOrderResponse.from(totalOrder);
+    }
+
+    @Override
+    @Transactional
+    public void createTotalOrderPaymentSuccess(UpdateTotalOrderSuccessRequestDto requestDto,
+        LoginUserInfoDto loginUserInfo) {
+        log.info("주문 성공 결제 요청 : {}", requestDto);
+        TotalOrder totalOrder = getTotalOrderElseThrow(requestDto.totalOrderId());
+        UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = totalOrderEntityLayerMapper.toUpdateTotalOrderSuccessDto(
+            requestDto);
+        totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
+        sendSlackMessage(loginUserInfo, totalOrder.getCreatedAt().toLocalDate(),
+            totalOrder.getPrice().getValue(), updateTotalOrderSuccessDto);
+    }
+
+    private void sendSlackMessage(
+        LoginUserInfoDto loginUserInfo,
+        LocalDate orderAt,
+        Long paymentPrice,
+        UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto
+    ) {
+        TotalOrderCompleteSendInfoDto totalOrderCompleteSendInfoDto = TotalOrderCompleteSendInfoDto.from(
+            orderAt, paymentPrice);
+        OrderCompleteSendSlackRequestDto sendSlackRequestDto = OrderCompleteSendSlackRequestDto.from(
+            updateTotalOrderSuccessDto,
+            totalOrderCompleteSendInfoDto, loginUserInfo);
+        try {
+            log.info("주문 성공 메시지 전달 요청");
+            slackService.sendOrderCompleteMessage(sendSlackRequestDto);
+        } catch (Exception e) {
+            log.warn("슬랙 메시지 전송 실패: {}", e.getMessage());
+        }
+    }
+
+    private TotalOrder getTotalOrderElseThrow(Long paymentId) {
+        return totalOrderRepository.findById(paymentId)
+            .orElseThrow(() -> new OrderException(OrderExceptionCode.ORDER_NOT_FOUND_TOTAL_ORDER));
     }
 
     protected ValidDestinationResponseDto validDestinationRequestDto(Long destinationId) {
@@ -179,8 +223,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             log.info("Order > Promotion");
             log.info("주문 생성 상품 정보 조회 요청 : {}", promotionRequestInfo);
-            productInfoDto = promotionService.getProductInfoAndStockDecrease(
-                promotionRequestInfo);
+            productInfoDto = promotionService.getProductInfoAndStockDecrease(promotionRequestInfo);
             log.info("상품 정보 조회 성공 : {}", productInfoDto);
         } catch (Exception e) {
             log.info("조회 실패 및 재고 감소 불가능 상황 : {}", e.getMessage());

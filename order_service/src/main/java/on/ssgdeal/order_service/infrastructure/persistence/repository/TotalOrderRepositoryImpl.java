@@ -3,8 +3,10 @@ package on.ssgdeal.order_service.infrastructure.persistence.repository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.order_service.domain.entity.TotalOrder;
+import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 import on.ssgdeal.order_service.domain.repository.TotalOrderRepository;
-import on.ssgdeal.order_service.infrastructure.persistence.jpa.querydsl.TotalOrderJpaRepository;
+import on.ssgdeal.order_service.infrastructure.persistence.jpa.TotalOrderJpaRepository;
+import on.ssgdeal.order_service.infrastructure.persistence.jpa.querydsl.TotalOrderQueryRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Repository;
 public class TotalOrderRepositoryImpl implements TotalOrderRepository {
 
     private final TotalOrderJpaRepository jpaRepository;
+    private final TotalOrderQueryRepository queryRepository;
 
     @Override
     public TotalOrder save(TotalOrder totalOrder) {
@@ -21,5 +24,11 @@ public class TotalOrderRepositoryImpl implements TotalOrderRepository {
     @Override
     public Optional<TotalOrder> findById(Long id) {
         return jpaRepository.findById(id);
+    }
+
+    @Override
+    public void paymentSuccess(TotalOrder totalOrder,
+        UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto) {
+        queryRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
     }
 }

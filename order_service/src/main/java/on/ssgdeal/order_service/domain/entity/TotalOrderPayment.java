@@ -39,7 +39,7 @@ public class TotalOrderPayment extends BaseEntity {
     private TotalOrder totalOrder;
 
     private Long paymentId;
-    
+
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;
 
@@ -47,13 +47,13 @@ public class TotalOrderPayment extends BaseEntity {
     private PaymentMethod paymentMethod;
 
     private Long paymentAmount;
-    private Long paymentKey;
+    private String paymentKey;
     private Timestamp paymentDate;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    private String failureCode;
+    private String paymentFailReason;
 
     public static TotalOrderPayment create(TotalOrder totalOrder) {
         return TotalOrderPayment.builder()
@@ -61,5 +61,4 @@ public class TotalOrderPayment extends BaseEntity {
             .paymentStatus(PaymentStatus.PENDING)
             .build();
     }
-
 }

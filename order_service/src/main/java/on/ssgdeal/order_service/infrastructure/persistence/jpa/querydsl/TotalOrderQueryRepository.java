@@ -1,14 +1,9 @@
-package on.ssgdeal.order_service.domain.repository;
+package on.ssgdeal.order_service.infrastructure.persistence.jpa.querydsl;
 
-import java.util.Optional;
 import on.ssgdeal.order_service.domain.entity.TotalOrder;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 
-public interface TotalOrderRepository {
-
-    TotalOrder save(TotalOrder totalOrder);
-
-    Optional<TotalOrder> findById(Long id);
+public interface TotalOrderQueryRepository {
 
     void paymentSuccess(TotalOrder totalOrder,
         UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto);

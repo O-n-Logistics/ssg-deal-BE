@@ -9,10 +9,5 @@ public record LoginUserInfoDto(Long userId, String username, String nickname,
         return new LoginUserInfoDto(passport.getUserId(), passport.getUsername(),
             passport.getNickname(), passport.getSlackEmail());
     }
-
-    public static LoginUserInfoDto testMethod(Long userId, String username,
-        String nickname,
-        String slackEmail) {
-        return new LoginUserInfoDto(userId, username, nickname, slackEmail);
-    }
+    
 }
