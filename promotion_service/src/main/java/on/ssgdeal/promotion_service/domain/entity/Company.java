@@ -20,10 +20,6 @@ public class Company extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "promotion_id", nullable = false)
-    private Promotion promotion;
-
     @Column(name = "manager_id", nullable = false)
     private Long managerId;
 
@@ -35,5 +31,9 @@ public class Company extends BaseEntity {
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
     private List<Product> products;
+
+    @OneToOne
+    @JoinColumn(name = "promotion_id")
+    private Promotion promotion;
 
 }

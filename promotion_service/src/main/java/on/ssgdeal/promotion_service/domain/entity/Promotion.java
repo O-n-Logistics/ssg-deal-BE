@@ -44,8 +44,7 @@ public class Promotion extends BaseEntity {
     @Column(name = "end_promotion_date", nullable = false)
     private LocalDateTime endPromotionDate;
 
-    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
-    private List<Company> companies;
-
+    @OneToOne(mappedBy = "promotion")
+    private Company company;
 
 }
