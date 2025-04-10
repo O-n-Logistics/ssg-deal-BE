@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8010
 
 spring:
   application:
@@ -17,6 +17,8 @@ spring:
       discovery:
         enabled: true
         service-id: config_service
+  profiles:
+    active: dev
 eureka:
   client:
     service-url:
