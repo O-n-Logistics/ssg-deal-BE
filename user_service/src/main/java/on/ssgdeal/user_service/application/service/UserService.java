@@ -16,24 +16,22 @@ import on.ssgdeal.user_service.presentation.internal.dto.FindMyUserResponse;
 
 public interface UserService {
 
-    CreateUserResponse createUser(CreateUserDto requestDto, HttpServletRequest servletRequest);
+    CreateUserResponse createUser(CreateUserDto requestDto);
 
-    FindByIdUserResponse findUserById(Long id, HttpServletRequest servletRequest);
+    FindByIdUserResponse findUserById(Long id);
 
     FindMyUserResponse findMyUser(HttpServletRequest request);
 
-    PageDto<SearchUserResponse> searchUser(SearchUserDto requestDto,
-        HttpServletRequest servletRequest);
+    PageDto<SearchUserResponse> searchUser(SearchUserDto requestDto);
 
     UpdateUserResponse updateUser(UpdateUserDto requestDto, HttpServletRequest request);
 
-    UpdateUserAdminResponse updateUserAdmin(UpdateUserAdminDto dto,
-        HttpServletRequest servletRequest);
+    UpdateUserAdminResponse updateUserAdmin(UpdateUserAdminDto dto);
 
-    FindByIdUserResponse findUserByIdInternal(Long id, HttpServletRequest request);
+    FindByIdUserResponse findUserByIdInternal(Long id);
 
-    void withdrawUserByUserId(Long id, HttpServletRequest request);
+    void withdrawUserByUserId(Long id);
 
-    GetSlackEmailByIdResponseDto getSlackEmailById(Long id, HttpServletRequest request);
+    GetSlackEmailByIdResponseDto getSlackEmailById(Long id);
 
 }
