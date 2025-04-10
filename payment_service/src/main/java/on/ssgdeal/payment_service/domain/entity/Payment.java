@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.common.jpa.BaseEntity;
+import on.ssgdeal.payment_service.application.service.dto.request.OrderPaymentRequestDto;
 import on.ssgdeal.payment_service.domain.enums.PaymentFailReason;
 import on.ssgdeal.payment_service.domain.enums.PaymentMethod;
 import on.ssgdeal.payment_service.domain.enums.PaymentStatus;
@@ -42,26 +43,43 @@ public class Payment extends BaseEntity {
     private Long paymentAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(200)")
     private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(200)")
     private PaymentType paymentType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(200)")
     private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(255)")
     private PaymentFailReason paymentFailReason;
 
     @Column(nullable = false)
     private Long balanceAmount;
 
-    private String failureCode;
+    public static Payment create(OrderPaymentRequestDto dto) {
+        return Payment.builder()
+            .totalOrderId(dto.totalOrderId())
+            .userId(dto.userId())
+            .paymentKey(dto.paymentKey())
+            .paymentAmount(dto.totalAmount())
+            .paymentMethod(PaymentMethod.valueOf(dto.paymentMethod()))
+            .paymentType(PaymentType.valueOf(dto.paymentType()))
+            .paymentStatus(PaymentStatus.PENDING)
+            .balanceAmount(dto.totalAmount())
+            .build();
+    }
 
-    private String failureReason;
+    public void complete() {
+        this.paymentStatus = PaymentStatus.COMPLETED;
+    }
 
-
+    public void fail(PaymentFailReason paymentFailReason) {
+        this.paymentStatus = PaymentStatus.FAILED;
+        this.paymentFailReason = paymentFailReason;
+    }
 }
