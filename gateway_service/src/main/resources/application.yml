@@ -15,8 +15,6 @@ spring:
           url: http://localhost:8080
         validate:
           endpoint: /internal/v1/auth/validate
-        secret:
-          key: key
       routes:
         - id: auth-service # 인증 서비스
           uri: lb://auth-service
