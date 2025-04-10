@@ -5,6 +5,7 @@ import lombok.*;
 import on.ssgdeal.common.jpa.BaseEntity;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import on.ssgdeal.promotion_service.domain.vo.PromotionContentImageUrl;
+import on.ssgdeal.promotion_service.domain.vo.PromotionPreviewUrl;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,8 +25,8 @@ public class Promotion extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "preview", nullable = false)
-    private String preview;
+    @Embedded
+    private PromotionPreviewUrl previewUrl;
 
     @Embedded
     private PromotionContentImageUrl contentImageUrl;
