@@ -13,12 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class ConfirmPaymentService {
+public class PaymentProcessorServiceImpl implements PaymentProcessorService {
 
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
     private final PaymentClient paymentClient;
 
+    @Override
     @Transactional
     public OrderPaymentResponseDto orderPayment(OrderPaymentRequestDto requestDto) {
         // TODO: total order id 검증
