@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import java.sql.Timestamp;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.domain.enums.PaymentMethod;
-import on.ssgdeal.order_service.domain.enums.PaymentStatus;
 import on.ssgdeal.order_service.domain.enums.PaymentType;
 
 public record UpdateTotalOrderSuccessRequest(
@@ -15,13 +14,12 @@ public record UpdateTotalOrderSuccessRequest(
     @NotNull(message = "paymentMethod는 필수 입력 값입니다.") PaymentMethod paymentMethod,
     @NotNull(message = "paymentAmount는 필수 입력 값입니다.") Long paymentAmount,
     @NotNull(message = "paymentDate는 필수 입력 값입니다.") Timestamp paymentDate,
-    @NotBlank(message = "paymentKey는 필수 입력 값입니다.") String paymentKey,
-    @NotBlank(message = "paymentStatus는 필수 입력 값입니다.") PaymentStatus paymentStatus) {
+    @NotBlank(message = "paymentKey는 필수 입력 값입니다.") String paymentKey) {
 
     public UpdateTotalOrderSuccessRequestDto toDto() {
         return new UpdateTotalOrderSuccessRequestDto(totalOrderId, paymentId, paymentType,
             paymentMethod,
-            paymentAmount, paymentDate, paymentKey, paymentStatus);
+            paymentAmount, paymentDate, paymentKey);
     }
 
 }

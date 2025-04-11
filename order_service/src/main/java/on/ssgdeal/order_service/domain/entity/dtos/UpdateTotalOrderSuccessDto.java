@@ -10,7 +10,6 @@ public record UpdateTotalOrderSuccessDto(Long totalOrderId,
                                          PaymentMethod paymentMethod,
                                          Long paymentAmount,
                                          Timestamp paymentDate,
-                                         String paymentKey,
-                                         String paymentStatus) {
+                                         String paymentKey) {
 
 }

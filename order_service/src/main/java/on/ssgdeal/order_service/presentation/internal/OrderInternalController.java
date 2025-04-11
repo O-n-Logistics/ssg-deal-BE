@@ -26,7 +26,7 @@ public class OrderInternalController {
     private final OrderService orderService;
     private final PassportUtil passportUtil;
 
-    @PostMapping("/payments")
+    @PostMapping("/payments/success")
     public ResponseEntity<CommonResponse<Void>> createTotalOrderPayment(
         @Valid @RequestBody UpdateTotalOrderSuccessRequest request,
         HttpServletRequest httpServletRequest
