@@ -14,6 +14,7 @@ import on.ssgdeal.user_service.application.dto.UpdateUserDto;
 import on.ssgdeal.user_service.domain.entity.User;
 import on.ssgdeal.user_service.domain.repository.UserRepository;
 import on.ssgdeal.user_service.domain.util.AuditFieldUpdater;
+import on.ssgdeal.user_service.exception.UserException;
 import on.ssgdeal.user_service.exception.UserException.UserNotFoundException;
 import on.ssgdeal.user_service.presentation.external.dto.CreateUserResponse;
 import on.ssgdeal.user_service.presentation.external.dto.SearchUserResponse;
@@ -39,7 +40,11 @@ public class UserServiceImpl implements UserService {
     public CreateUserResponse createUser(
         CreateUserDto dto
     ) {
+        if (userRepository.existsBySlackEmail(dto.slackEmail())) {
+            throw new UserException.UserSlackEmailAlreadyExistsException();
+        }
         User user = User.create(dto);
+
         User savedUser = userRepository.save(user);
         AuditFieldUpdater.updateAuditFields(savedUser, savedUser.getId());
 
@@ -86,6 +91,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UpdateUserResponse updateUser(UpdateUserDto dto, HttpServletRequest request) {
         Passport passport = passportUtil.getPassportBy(request);
+
+        if (userRepository.existsBySlackEmail(dto.slackEmail())) {
+            throw new UserException.UserSlackEmailAlreadyExistsException();
+        }
+
         Long id = passport.getUserId();
 
         User user = findByIdOrElseThrow(id);
@@ -101,6 +111,10 @@ public class UserServiceImpl implements UserService {
     public UpdateUserAdminResponse updateUserAdmin(
         UpdateUserAdminDto dto
     ) {
+        if (userRepository.existsBySlackEmail(dto.slackEmail())) {
+            throw new UserException.UserSlackEmailAlreadyExistsException();
+        }
+        
         User user = findByIdOrElseThrow(dto.userId());
 
         user.updateNickname(dto.nickname());

@@ -52,4 +52,11 @@ public class UserException extends CustomException {
         }
     }
 
+    public static class UserSlackEmailAlreadyExistsException extends UserException {
+
+        public UserSlackEmailAlreadyExistsException() {
+            super(UserExceptionCode.USER_SLACK_EMAIL_ALREADY_EXISTS);
+        }
+    }
+
 }

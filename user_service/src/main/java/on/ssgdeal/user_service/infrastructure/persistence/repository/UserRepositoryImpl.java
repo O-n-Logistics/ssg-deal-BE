@@ -1,11 +1,11 @@
 package on.ssgdeal.user_service.infrastructure.persistence.repository;
 
 import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.user_service.application.dto.SearchUserDto;
 import on.ssgdeal.user_service.domain.entity.User;
 import on.ssgdeal.user_service.domain.repository.UserRepository;
+import on.ssgdeal.user_service.domain.vo.SlackEmail;
 import on.ssgdeal.user_service.infrastructure.persistence.jpa.UserJpaRepository;
 import on.ssgdeal.user_service.infrastructure.persistence.jpa.querydsl.UserQueryRepository;
 import org.springframework.data.domain.Page;
@@ -37,5 +37,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Page<User> searchUser(SearchUserDto requestDto) {
         return userQueryRepository.searchUser(requestDto);
+    }
+
+    @Override
+    public Boolean existsBySlackEmail(SlackEmail SlackEmail) {
+        return userJpaRepository.existsBySlackEmail(SlackEmail);
     }
 }
