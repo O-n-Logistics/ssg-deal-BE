@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   application:
-    name: order_service
+    name: order-service
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,7 +28,7 @@ spring:
     config:
       discovery:
         enabled: true
-        service-id: config_service
+        service-id: config-service
 eureka:
   client:
     service-url:
