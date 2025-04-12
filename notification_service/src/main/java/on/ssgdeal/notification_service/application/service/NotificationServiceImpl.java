@@ -11,7 +11,7 @@ import on.ssgdeal.notification_service.domain.repository.NotificationRepository;
 import on.ssgdeal.notification_service.domain.repository.NotificationTemplateRepository;
 import on.ssgdeal.notification_service.exception.NotificationException;
 import on.ssgdeal.notification_service.infrastructure.client.slack.converter.SlackTimestampToKSTConverter;
-import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationResponse;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +29,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public CreateNotificationResponse sendSlackNotification(
+    public CreateNotificationResponseDto sendSlackNotification(
             final CreateNotificationRequestDto requestDto
     ) {
         log.info("주문 완료 슬랙 메시지 전송 요청 : {}", requestDto);
@@ -46,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("알림 생성 DTO : {}", notificationDto.toString());
         Notification notification = Notification.create(notificationDto);
         notificationRepository.save(notification);
-        return CreateNotificationResponse.from(notification);
+        return CreateNotificationResponseDto.from(notification);
     }
 
     private String createOrderCompletedSlackNotification(

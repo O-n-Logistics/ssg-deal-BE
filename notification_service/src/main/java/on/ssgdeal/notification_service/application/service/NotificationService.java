@@ -1,9 +1,9 @@
 package on.ssgdeal.notification_service.application.service;
 
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationRequestDto;
-import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationResponse;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 
 public interface NotificationService {
 
-    CreateNotificationResponse sendSlackNotification(CreateNotificationRequestDto requestDto);
+    CreateNotificationResponseDto sendSlackNotification(CreateNotificationRequestDto requestDto);
 }

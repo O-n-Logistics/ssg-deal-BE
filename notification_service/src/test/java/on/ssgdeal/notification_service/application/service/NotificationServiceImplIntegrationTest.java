@@ -7,7 +7,7 @@ import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
 import on.ssgdeal.notification_service.domain.repository.NotificationRepository;
 import on.ssgdeal.notification_service.domain.repository.NotificationTemplateRepository;
 import on.ssgdeal.notification_service.infrastructure.client.slack.converter.SlackTimestampToKSTConverter;
-import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationResponse;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import org.hibernate.AssertionFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -97,7 +97,7 @@ public class NotificationServiceImplIntegrationTest {
                 when(slackTimestampToKSTConverter.convertToKST(anyString())).thenReturn(mockSendAt);
 
                 //when
-                CreateNotificationResponse response = notificationService.sendSlackNotification(mockRequestDto);
+                CreateNotificationResponseDto response = notificationService.sendSlackNotification(mockRequestDto);
 
                 //then
                 assertThat(response).isNotNull();

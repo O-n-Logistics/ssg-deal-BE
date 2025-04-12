@@ -9,7 +9,7 @@ import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.notification_service.application.service.NotificationServiceImpl;
 import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationRequest;
-import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationResponse;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import on.ssgdeal.notification_service.presentation.internal.dto.mapper.NotificationPresentationMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +28,7 @@ public class NotificationInternalController {
     private final NotificationServiceImpl notificationServiceImpl;
 
     @PostMapping("/order/complete")
-    public ResponseEntity<CommonResponse<CreateNotificationResponse>> createNotification(
+    public ResponseEntity<CommonResponse<CreateNotificationResponseDto>> createNotification(
             @Valid @RequestBody final CreateNotificationRequest request,
             HttpServletRequest servletRequest
     ) {
