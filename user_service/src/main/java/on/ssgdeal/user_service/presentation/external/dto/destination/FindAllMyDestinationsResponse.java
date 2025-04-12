@@ -22,13 +22,13 @@ public record FindAllMyDestinationsResponse(
         );
     }
 
-    private record DestinationResponse(
+    public record DestinationResponse(
         Long destinationId,
         String destinationName,
         String address
     ) {
 
-        private static DestinationResponse from(Destination destination) {
+        public static DestinationResponse from(Destination destination) {
             return new DestinationResponse(
                 destination.getId(),
                 destination.getName(),

@@ -10,9 +10,7 @@ import on.ssgdeal.user_service.application.dto.destination.UpdateMyDestinationRe
 import on.ssgdeal.user_service.domain.entity.Destination;
 import on.ssgdeal.user_service.domain.entity.Destination.CreateDestinationDto;
 import on.ssgdeal.user_service.domain.repository.DestinationRepository;
-import on.ssgdeal.user_service.exception.UserException;
 import on.ssgdeal.user_service.exception.destination.DestinationException;
-import on.ssgdeal.user_service.exception.destination.DestinationExceptionCode;
 import on.ssgdeal.user_service.presentation.external.dto.destination.CreateMyDestinationResponse;
 import on.ssgdeal.user_service.presentation.external.dto.destination.FindAllMyDestinationsResponse;
 import on.ssgdeal.user_service.presentation.external.dto.destination.FindMyDestinationResponse;
@@ -33,7 +31,7 @@ public class DestinationServiceImpl implements DestinationService {
         List<Destination> myDestinations = destinationRepository.findByUserId(passport.getUserId());
 
         if (myDestinations.isEmpty()) {
-            throw new UserException(DestinationExceptionCode.DESTINATION_NOT_FOUND);
+            throw new DestinationException.DestinationNotFoundException();
         }
 
         return FindAllMyDestinationsResponse.from(passport, myDestinations);
