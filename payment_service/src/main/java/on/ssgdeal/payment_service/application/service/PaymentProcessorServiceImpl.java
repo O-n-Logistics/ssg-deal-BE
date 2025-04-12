@@ -2,9 +2,11 @@ package on.ssgdeal.payment_service.application.service;
 
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.payment_service.application.service.dto.request.OrderPaymentRequestDto;
+import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentCancelResponseDto;
 import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentResponseDto;
 import on.ssgdeal.payment_service.domain.entity.Payment;
 import on.ssgdeal.payment_service.domain.repository.PaymentRepository;
+import on.ssgdeal.payment_service.exception.PaymentException.PaymentCancelException;
 import on.ssgdeal.payment_service.exception.PaymentException.PaymentConfirmException;
 import on.ssgdeal.payment_service.exception.PaymentException.PaymentNotFoundException;
 import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.PaymentClient;
@@ -34,6 +36,20 @@ public class PaymentProcessorServiceImpl implements PaymentProcessorService {
         } catch (PaymentConfirmException e) {
             managedPayment.fail(e.getFailReason());
             return OrderPaymentResponseDto.fail(managedPayment);
+        }
+    }
+
+    @Override
+    @Transactional
+    public OrderPaymentCancelResponseDto orderPaymentCancel(final Long totalOrderId) {
+        Payment payment = paymentService.getPaymentByTotalOrderId(totalOrderId);
+
+        try {
+            paymentClient.cancelPayment(payment);
+            payment.cancel();
+            return OrderPaymentCancelResponseDto.success(payment);
+        } catch (PaymentCancelException e) {
+            return OrderPaymentCancelResponseDto.fail(payment);
         }
     }
 

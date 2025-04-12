@@ -9,9 +9,13 @@ import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.payment_service.configuration.PaymentExceptionInterceptor;
 import on.ssgdeal.payment_service.configuration.PaymentLoggingInterceptor;
+import on.ssgdeal.payment_service.domain.entity.Payment;
+import on.ssgdeal.payment_service.domain.enums.PaymentCancelReason;
 import on.ssgdeal.payment_service.domain.enums.PaymentFailReason;
 import on.ssgdeal.payment_service.exception.PaymentException.PaymentConfirmException;
+import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.dto.request.PaymentCancelRequestDto;
 import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.dto.request.PaymentConfirmRequestDto;
+import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.dto.response.PaymentCancelResponseDto;
 import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.dto.response.PaymentConfirmResponseDto;
 import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.dto.response.PaymentFailResponseDto;
 import org.springframework.http.HttpHeaders;
@@ -82,6 +86,21 @@ public class PaymentClient {
                 }
             })
             .body(PaymentConfirmResponseDto.class);
+    }
+
+    public PaymentCancelResponseDto cancelPayment(Payment payment) {
+        PaymentCancelRequestDto requestDto = new PaymentCancelRequestDto(
+            PaymentCancelReason.SIMPLE_CHANGE_OF_MIND.getDescription());
+        return restClient.method(HttpMethod.POST)
+            .uri(paymentProperties.getCancelUrl(payment.getPaymentKey()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(requestDto)
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, (request, response) -> {
+
+            })
+            .body(PaymentCancelResponseDto.class);
+
     }
 
     private PaymentFailReason extractFailReason(String errorBody) {

@@ -6,4 +6,6 @@ import on.ssgdeal.payment_service.domain.entity.Payment;
 public interface PaymentService {
 
     Payment savePayment(OrderPaymentRequestDto dto);
+
+    Payment getPaymentByTotalOrderId(final Long totalOrderId);
 }
