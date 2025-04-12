@@ -103,4 +103,8 @@ public class TotalOrder extends BaseEntity {
     private void addTotalOrderPaymentsDependency(TotalOrderPayment totalOrderPayment) {
         this.totalOrderPayments.add(totalOrderPayment);
     }
+
+    public void updateCancelTotalPrice(Long orderPrice) {
+        this.price = price.updateCancelTotalPrice(orderPrice);
+    }
 }

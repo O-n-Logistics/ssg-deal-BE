@@ -32,4 +32,9 @@ public class TotalPrice {
             throw new OrderMinPriceException();
         }
     }
+
+    public TotalPrice updateCancelTotalPrice(final Long orderPrice) {
+
+        return new TotalPrice(this.value - orderPrice);
+    }
 }

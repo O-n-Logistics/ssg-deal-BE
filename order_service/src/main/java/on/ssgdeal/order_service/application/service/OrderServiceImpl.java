@@ -238,15 +238,17 @@ public class OrderServiceImpl implements OrderService {
                 request.totalOrderId(), request.orderId())
             .orElseThrow(OrderNotFoundTotalOrderException::new);
         totalOrderRepository.cancelUpdateStatusTotalOrder(totalOrder);
-        CancelOrderPaymentRequestDto requestDto = CancelOrderPaymentRequestDto.from(
+        TotalOrder updateTotalOrder = getTotalOrderElseThrow(totalOrder.getId());
+        updateTotalOrder.updateCancelTotalPrice(
             totalOrder.getOrders().get(0).getPrice().getValue());
-        requestCancelOrderPayment(requestDto, totalOrder);
+        requestCancelOrderPayment(totalOrder);
         requestCancelTotalOrderIncreaseProduct(totalOrder);
         return CancelOrderResponseDto.from(totalOrder.getOrders().get(0).getId());
     }
 
-    private void requestCancelOrderPayment(CancelOrderPaymentRequestDto requestDto,
-        TotalOrder totalOrder) {
+    private void requestCancelOrderPayment(TotalOrder totalOrder) {
+        CancelOrderPaymentRequestDto requestDto = CancelOrderPaymentRequestDto.from(
+            totalOrder.getOrders().get(0).getPrice().getValue());
         try {
             log.error("부분 주문 결제 취소 요청 cancelAmount : {}", requestDto.cancelAmount());
             paymentService.cancelOrderPayment(totalOrder.getId(), requestDto);
