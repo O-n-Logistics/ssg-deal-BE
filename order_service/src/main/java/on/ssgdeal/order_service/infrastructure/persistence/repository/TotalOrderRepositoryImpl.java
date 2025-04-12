@@ -44,7 +44,7 @@ public class TotalOrderRepositoryImpl implements TotalOrderRepository {
     }
 
     @Override
-    public TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto) {
+    public Optional<TotalOrder> getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto) {
 
         return queryRepository.getTotalOrderDetail(getTotalOrderDetailDto);
     }

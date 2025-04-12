@@ -93,7 +93,7 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
     }
 
     @Override
-    public TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto) {
+    public Optional<TotalOrder> getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto) {
         BooleanBuilder totalOrderDetailFilter = getTotalOrderDetailFilter(getTotalOrderDetailDto);
 
         return getTotalOrderDetailInfo(totalOrderDetailFilter);
@@ -148,11 +148,11 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
             )
             .fetch();
 
-        return Optional.empty();
+        return Optional.ofNullable(results.get(0));
     }
 
-    public TotalOrder getTotalOrderDetailInfo(BooleanBuilder totalOrderDetailFilter) {
-        return queryFactory
+    public Optional<TotalOrder> getTotalOrderDetailInfo(BooleanBuilder totalOrderDetailFilter) {
+        List<TotalOrder> results = queryFactory
             .selectDistinct(totalOrder)
             .from(totalOrder)
             .join(totalOrder.totalOrderPayments, totalOrderPayment).fetchJoin()
@@ -160,7 +160,8 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
             .join(totalOrder.orderer, orderer).fetchJoin()
             .join(order.orderProducts, orderProduct).fetchJoin()
             .where(totalOrderDetailFilter)
-            .fetchOne();
+            .fetch();
+        return Optional.ofNullable(results.get(0));
     }
 
     private List<TotalOrder> getTotalOrder(GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto,

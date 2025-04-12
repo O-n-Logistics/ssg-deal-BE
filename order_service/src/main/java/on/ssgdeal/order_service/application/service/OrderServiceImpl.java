@@ -164,11 +164,8 @@ public class OrderServiceImpl implements OrderService {
         log.info("주문 상세 내용 요청");
         GetTotalOrderDetailDto getTotalOrderDetailDto = GetTotalOrderDetailDto.from(totalOrderId,
             loginUserInfo.userId());
-        TotalOrder totalOrder = totalOrderRepository.getTotalOrderDetail(getTotalOrderDetailDto);
-        if (totalOrder == null) {
-            throw new OrderNotFoundTotalOrderException();
-        }
-
+        TotalOrder totalOrder = totalOrderRepository.getTotalOrderDetail(getTotalOrderDetailDto)
+            .orElseThrow(OrderNotFoundTotalOrderException::new);
         return GetTotalOrderDetailResponseDto.toGetTotalOrderDetailResponseDto(totalOrder);
     }
 

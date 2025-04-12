@@ -16,7 +16,7 @@ public interface TotalOrderQueryRepository {
     Page<TotalOrder> getTotalOrderList(
         GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto, Pageable pageable);
 
-    TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
+    Optional<TotalOrder> getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
 
     void cancelUpdateStatusTotalOrder(TotalOrder totalOrder);
 

@@ -20,7 +20,7 @@ public interface TotalOrderRepository {
     Page<TotalOrder> getTotalOrderList(
         GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto, Pageable pageable);
 
-    TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
+    Optional<TotalOrder> getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
 
     Boolean existsById(Long totalOrderId);
 
