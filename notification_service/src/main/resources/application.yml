@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: notification_service
+    name: notification-service
   config:
     import: "optional:configserver:"
   data:
@@ -16,8 +16,7 @@ spring:
     config:
       discovery:
         enabled: false
-        service-id: config_service
-
+        service-id: config-service
   profiles:
     active: dev
 

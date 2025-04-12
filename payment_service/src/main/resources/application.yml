@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: payment_service
+    name: payment-service
   config:
     import: "configserver:"
   data:
@@ -12,11 +12,16 @@ spring:
       port: 1234
       username: username
       password: password
+  datasource:
+    url: url
+    username: username
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     config:
       discovery:
         enabled: true
-        service-id: config_service
+        service-id: config-service
 eureka:
   client:
     service-url:
