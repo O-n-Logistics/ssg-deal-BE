@@ -4,15 +4,15 @@ import java.util.List;
 import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.user_service.domain.entity.Destination;
 
-public record GetMyDestinationsResponse(
+public record FindAllMyDestinationsResponse(
     String nickname,
     String slackEmail,
     List<DestinationResponse> destinations
 ) {
 
-    public static GetMyDestinationsResponse from(Passport passport,
+    public static FindAllMyDestinationsResponse from(Passport passport,
         List<Destination> destinations) {
-        return new GetMyDestinationsResponse(
+        return new FindAllMyDestinationsResponse(
             passport.getNickname(),
             passport.getSlackEmail(),
             destinations
@@ -23,14 +23,16 @@ public record GetMyDestinationsResponse(
     }
 
     private record DestinationResponse(
-        String address,
-        String destinationName
+        Long destinationId,
+        String destinationName,
+        String address
     ) {
 
         private static DestinationResponse from(Destination destination) {
             return new DestinationResponse(
-                destination.getAddress().toString(),
-                destination.getName()
+                destination.getId(),
+                destination.getName(),
+                destination.getAddress().toString()
             );
         }
     }

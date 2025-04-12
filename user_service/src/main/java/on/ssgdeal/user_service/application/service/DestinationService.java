@@ -1,14 +1,24 @@
 package on.ssgdeal.user_service.application.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationDto;
+import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationRequestDto;
+import on.ssgdeal.user_service.application.dto.destination.UpdateMyDestinationRequestDto;
 import on.ssgdeal.user_service.presentation.external.dto.destination.CreateMyDestinationResponse;
-import on.ssgdeal.user_service.presentation.external.dto.destination.GetMyDestinationsResponse;
+import on.ssgdeal.user_service.presentation.external.dto.destination.FindAllMyDestinationsResponse;
+import on.ssgdeal.user_service.presentation.external.dto.destination.FindMyDestinationResponse;
+import on.ssgdeal.user_service.presentation.external.dto.destination.UpdateMyDestinationResponse;
 
 public interface DestinationService {
 
-    GetMyDestinationsResponse getMy(HttpServletRequest httpServletRequest);
+    FindAllMyDestinationsResponse findAllMy(HttpServletRequest httpServletRequest);
 
     CreateMyDestinationResponse createMy(HttpServletRequest httpServletRequest,
-        CreateMyDestinationDto dto);
+        CreateMyDestinationRequestDto dto);
+
+    UpdateMyDestinationResponse updateMy(HttpServletRequest httpServletRequest,
+        UpdateMyDestinationRequestDto dto);
+
+    void deleteMy(HttpServletRequest httpServletRequest, Long destinationId);
+
+    FindMyDestinationResponse findMy(HttpServletRequest httpServletRequest, Long destinationId);
 }

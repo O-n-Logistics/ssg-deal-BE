@@ -10,7 +10,7 @@ class DestinationServiceImplTest {
     }
 
     @Test
-    void getMy() {
+    void findAllMy() {
     }
 
     @Test

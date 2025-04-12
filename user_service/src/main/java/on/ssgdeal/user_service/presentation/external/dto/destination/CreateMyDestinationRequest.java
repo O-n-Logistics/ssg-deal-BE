@@ -1,14 +1,14 @@
 package on.ssgdeal.user_service.presentation.external.dto.destination;
 
-import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationDto;
+import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationRequestDto;
 
 public record CreateMyDestinationRequest(
     String destinationName,
     String address
 ) {
 
-    public CreateMyDestinationDto toDto() {
-        return new CreateMyDestinationDto(
+    public CreateMyDestinationRequestDto toDto() {
+        return new CreateMyDestinationRequestDto(
             destinationName,
             address
         );

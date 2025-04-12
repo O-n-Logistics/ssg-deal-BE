@@ -33,4 +33,9 @@ public class DestinationRepositoryImpl implements DestinationRepository {
     public List<Destination> findByUserId(Long userId) {
         return jpaRepository.findByUserId(userId);
     }
+
+    @Override
+    public Optional<Destination> findByIdAndUserId(Long id, Long userId) {
+        return jpaRepository.findByIdAndUserId(id, userId);
+    }
 }

@@ -14,4 +14,5 @@ public interface DestinationRepository {
 
     List<Destination> findByUserId(Long userId);
 
+    Optional<Destination> findByIdAndUserId(Long id, Long userId);
 }

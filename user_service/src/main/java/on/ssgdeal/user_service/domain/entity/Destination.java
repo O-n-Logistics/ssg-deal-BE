@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.common.jpa.BaseEntity;
-import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationDto;
 import on.ssgdeal.user_service.domain.vo.Address;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -35,12 +34,45 @@ public class Destination extends BaseEntity {
     private Address address;
     private String name;
 
-    public static Destination create(Passport passport, CreateMyDestinationDto dto) {
+    public static Destination create(Passport passport, CreateDestinationDto dto) {
         return Destination.builder()
             .userId(passport.getUserId())
-            .address(new Address(dto.address()))
-            .name(dto.destinationName())
+            .address(dto.address())
+            .name(dto.name())
             .build();
+    }
+
+    public void update(UpdateDestinationDto dto) {
+        if (dto.address != null) {
+            this.address = dto.address();
+        }
+
+        if (dto.name != null) {
+            this.name = dto.name();
+        }
+    }
+
+    public CreateDestinationDto toCreateDestinationDto() {
+        return CreateDestinationDto.builder()
+            .address(this.address)
+            .name(this.name)
+            .build();
+    }
+
+    @Builder
+    public record CreateDestinationDto(
+        Address address,
+        String name
+    ) {
+
+    }
+
+    @Builder
+    public record UpdateDestinationDto(
+        String name,
+        Address address
+    ) {
+
     }
 
 }

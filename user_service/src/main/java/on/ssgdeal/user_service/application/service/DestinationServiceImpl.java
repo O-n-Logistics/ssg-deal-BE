@@ -5,13 +5,18 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.common.auth.passport.PassportUtil;
-import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationDto;
+import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationRequestDto;
+import on.ssgdeal.user_service.application.dto.destination.UpdateMyDestinationRequestDto;
 import on.ssgdeal.user_service.domain.entity.Destination;
+import on.ssgdeal.user_service.domain.entity.Destination.CreateDestinationDto;
 import on.ssgdeal.user_service.domain.repository.DestinationRepository;
 import on.ssgdeal.user_service.exception.UserException;
+import on.ssgdeal.user_service.exception.destination.DestinationException;
 import on.ssgdeal.user_service.exception.destination.DestinationExceptionCode;
 import on.ssgdeal.user_service.presentation.external.dto.destination.CreateMyDestinationResponse;
-import on.ssgdeal.user_service.presentation.external.dto.destination.GetMyDestinationsResponse;
+import on.ssgdeal.user_service.presentation.external.dto.destination.FindAllMyDestinationsResponse;
+import on.ssgdeal.user_service.presentation.external.dto.destination.FindMyDestinationResponse;
+import on.ssgdeal.user_service.presentation.external.dto.destination.UpdateMyDestinationResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +28,7 @@ public class DestinationServiceImpl implements DestinationService {
     private final PassportUtil passportUtil;
 
     @Override
-    public GetMyDestinationsResponse getMy(HttpServletRequest httpServletRequest) {
+    public FindAllMyDestinationsResponse findAllMy(HttpServletRequest httpServletRequest) {
         Passport passport = passportUtil.getPassportBy(httpServletRequest);
         List<Destination> myDestinations = destinationRepository.findByUserId(passport.getUserId());
 
@@ -31,20 +36,78 @@ public class DestinationServiceImpl implements DestinationService {
             throw new UserException(DestinationExceptionCode.DESTINATION_NOT_FOUND);
         }
 
-        return GetMyDestinationsResponse.from(passport, myDestinations);
+        return FindAllMyDestinationsResponse.from(passport, myDestinations);
     }
 
     @Override
     @Transactional
     public CreateMyDestinationResponse createMy(
         HttpServletRequest httpServletRequest,
-        CreateMyDestinationDto dto
+        CreateMyDestinationRequestDto dto
     ) {
         Passport passport = passportUtil.getPassportBy(httpServletRequest);
-        Destination destination = Destination.create(passport, dto);
 
+        CreateDestinationDto entityDto = dto.toCreateDestinationDto();
+
+        Destination destination = Destination.create(passport, entityDto);
         Destination savedDestination = destinationRepository.save(destination);
 
         return CreateMyDestinationResponse.from(savedDestination.getId());
+    }
+
+    @Override
+    @Transactional
+    public UpdateMyDestinationResponse updateMy(
+        HttpServletRequest httpServletRequest,
+        UpdateMyDestinationRequestDto dto
+    ) {
+        Passport passport = passportUtil.getPassportBy(httpServletRequest);
+        Long userId = passport.getUserId();
+
+        Destination destination = findByIdAndUserIdOrElseThrow(dto.destinationId(), userId);
+        destination.update(dto.toUpdateDestinationDto());
+
+        Destination updatedDestination = destinationRepository.save(destination);
+
+        return UpdateMyDestinationResponse.from(updatedDestination);
+    }
+
+    @Override
+    public void deleteMy(
+        HttpServletRequest httpServletRequest,
+        Long destinationId
+    ) {
+        Passport passport = passportUtil.getPassportBy(httpServletRequest);
+        Long userId = passport.getUserId();
+
+        Destination destination = findByIdAndUserIdOrElseThrow(destinationId, userId);
+
+        destinationRepository.delete(destination);
+    }
+
+    @Override
+    public FindMyDestinationResponse findMy(
+        HttpServletRequest httpServletRequest,
+        Long destinationId
+    ) {
+        Passport passport = passportUtil.getPassportBy(httpServletRequest);
+        Long userId = passport.getUserId();
+
+        Destination destination = findByIdAndUserIdOrElseThrow(destinationId, userId);
+
+        return FindMyDestinationResponse.from(passport, destination);
+    }
+
+
+    private Destination findByIdAndUserIdOrElseThrow(Long destinationId, Long userId) {
+        return destinationRepository
+            .findByIdAndUserId(destinationId, userId)
+            .orElseThrow(DestinationException.DestinationNotFoundException::new);
+    }
+
+    private Destination findByIdOrElseThrow(Long destinationId) {
+        return destinationRepository
+            .findById(destinationId)
+            .orElseThrow(DestinationException.DestinationNotFoundException::new);
     }
 }

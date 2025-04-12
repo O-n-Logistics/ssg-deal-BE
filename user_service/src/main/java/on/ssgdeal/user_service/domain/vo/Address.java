@@ -23,6 +23,10 @@ public class Address {
         this.address = email;
     }
 
+    public static Address valueOf(String address) {
+        return new Address(address);
+    }
+
     private void validate(final String address) {
         if (Objects.isNull(address) || address.isBlank()) {
             throw new DestinationException.DestinationAddressIsNullException();

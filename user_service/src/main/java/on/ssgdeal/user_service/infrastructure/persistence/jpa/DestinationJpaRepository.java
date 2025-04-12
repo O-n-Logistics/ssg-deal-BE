@@ -11,4 +11,6 @@ public interface DestinationJpaRepository extends JpaRepository<Destination, Lon
 
     List<Destination> findByUserId(Long userId);
 
+    Optional<Destination> findByIdAndUserId(Long id, Long userId);
+
 }
