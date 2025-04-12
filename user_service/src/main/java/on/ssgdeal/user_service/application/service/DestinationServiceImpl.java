@@ -7,6 +7,7 @@ import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.user_service.application.dto.destination.CreateMyDestinationRequestDto;
 import on.ssgdeal.user_service.application.dto.destination.UpdateMyDestinationRequestDto;
+import on.ssgdeal.user_service.application.dto.destination.ValidateDestinationsRequestDto;
 import on.ssgdeal.user_service.domain.entity.Destination;
 import on.ssgdeal.user_service.domain.entity.Destination.CreateDestinationDto;
 import on.ssgdeal.user_service.domain.repository.DestinationRepository;
@@ -15,6 +16,7 @@ import on.ssgdeal.user_service.presentation.external.dto.destination.CreateMyDes
 import on.ssgdeal.user_service.presentation.external.dto.destination.FindAllMyDestinationsResponse;
 import on.ssgdeal.user_service.presentation.external.dto.destination.FindMyDestinationResponse;
 import on.ssgdeal.user_service.presentation.external.dto.destination.UpdateMyDestinationResponse;
+import on.ssgdeal.user_service.presentation.internal.dto.ValidateDestinationsResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +96,19 @@ public class DestinationServiceImpl implements DestinationService {
         Destination destination = findByIdAndUserIdOrElseThrow(destinationId, userId);
 
         return FindMyDestinationResponse.from(passport, destination);
+    }
+
+    @Override
+    public ValidateDestinationsResponse validateMyDestinations(
+        HttpServletRequest httpServletRequest,
+        ValidateDestinationsRequestDto dto
+    ) {
+        Passport passport = passportUtil.getPassportBy(httpServletRequest);
+        Long userId = passport.getUserId();
+
+        Destination destination = findByIdAndUserIdOrElseThrow(dto.destinationId(), userId);
+
+        return ValidateDestinationsResponse.from(destination);
     }
 
 
