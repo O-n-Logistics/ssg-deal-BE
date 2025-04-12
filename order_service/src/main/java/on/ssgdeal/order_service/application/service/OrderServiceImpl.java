@@ -40,6 +40,7 @@ import on.ssgdeal.order_service.exception.OrderException.OrderNotOrdererExceptio
 import on.ssgdeal.order_service.exception.OrderException.OrderPaymentsError;
 import on.ssgdeal.order_service.exception.OrderException.OrderPromotionStockOver;
 import on.ssgdeal.order_service.exception.OrderException.OrderValidDestination;
+import on.ssgdeal.order_service.infrastructure.client.cart.feign.dtos.ClearCartRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.payments.feign.dtos.CancelTotalOrderPaymentRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.DecreaseProductStockRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.DecreaseProductStockResponseDto;
@@ -133,6 +134,17 @@ public class OrderServiceImpl implements OrderService {
         TotalOrder updatedTotalOrder = getTotalOrderElseThrow(totalOrder.getId());
         sendSlackMessage(loginUserInfo, updatedTotalOrder.getCreatedAt().toLocalDate(),
             updatedTotalOrder.getPrice().getValue(), updateTotalOrderSuccessDto);
+        clearCart(updatedTotalOrder);
+    }
+
+    private void clearCart(TotalOrder updatedTotalOrder) {
+        ClearCartRequestDto clearCartRequestDto = ClearCartRequestDto.from(updatedTotalOrder);
+        try {
+            log.info("장바구니 비우기 요청 totalOrderId : {}", updatedTotalOrder.getId());
+            cartService.clearCart(clearCartRequestDto);
+        } catch (Exception e) {
+            log.error("장바구니 비우기 요청 실패 : {} ", e.getMessage());
+        }
     }
 
     @Override
