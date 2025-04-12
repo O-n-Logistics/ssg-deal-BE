@@ -1,15 +1,13 @@
 package on.ssgdeal.promotion_service.presentation.external;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.promotion_service.application.service.PromotionService;
 import on.ssgdeal.promotion_service.application.service.dto.GetFinishedPromotionDetailResponseDto;
+import on.ssgdeal.promotion_service.application.service.dto.GetInProgressPromotionDetailResponseDto;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -27,6 +25,15 @@ public class PromotionController {
         return ResponseEntity.ok().body(CommonResponse.success(responseDto));
     }
 
+    @GetMapping("/in-progress/{promotionId}")
+    public ResponseEntity<CommonResponse<GetInProgressPromotionDetailResponseDto>> getInProgressPromotionDetail(
+            @PathVariable final Long promotionId,
+            @RequestParam(required = false) Long lastId,
+            final Pageable pageable
+            ) {
+        final var responseDto = promotionService.getInProgressPromotionDetail(promotionId, pageable);
+        return ResponseEntity.ok().body(CommonResponse.success(responseDto));
+    }
 }
 
 
