@@ -12,4 +12,10 @@ public class PromotionException extends CustomException {
         }
     }
 
+    public static class PromotionNotFinishedException extends PromotionException {
+        public PromotionNotFinishedException() {
+            super(PromotionExceptionCode.PROMOTION_NOT_FINISHED);
+        }
+    }
+
 }
