@@ -1,6 +1,8 @@
 package on.ssgdeal.order_service.application.service;
 
 import on.ssgdeal.common.application.dto.PageDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderResponseDto;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
@@ -23,4 +25,6 @@ public interface OrderService {
     GetTotalOrderDetailResponseDto getTotalOrderDetail(Long id, LoginUserInfoDto loginUserInfo);
 
     ValidTotalOrderResponse validTotalOrder(Long totalOrderId);
+
+    CancelTotalOrderResponseDto cancelTotalOrder(CancelTotalOrderRequestDto request);
 }

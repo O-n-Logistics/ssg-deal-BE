@@ -54,4 +54,17 @@ public class TotalOrderRepositoryImpl implements TotalOrderRepository {
         return jpaRepository.existsById(totalOrderId);
     }
 
+
+    @Override
+    public Optional<TotalOrder> findTotalOrderForCancel(Long totalOrderId) {
+        return queryRepository.findTotalOrderForCancel(totalOrderId);
+    }
+
+
+    @Override
+    public void cancelUpdateStatusTotalOrder(TotalOrder totalOrder) {
+
+        queryRepository.cancelUpdateStatusTotalOrder(totalOrder);
+    }
+
 }

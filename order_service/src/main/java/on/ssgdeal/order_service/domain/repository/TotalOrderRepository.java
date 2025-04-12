@@ -23,4 +23,8 @@ public interface TotalOrderRepository {
     TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
 
     Boolean existsById(Long totalOrderId);
+
+    Optional<TotalOrder> findTotalOrderForCancel(Long totalOrderId);
+
+    void cancelUpdateStatusTotalOrder(TotalOrder totalOrder);
 }

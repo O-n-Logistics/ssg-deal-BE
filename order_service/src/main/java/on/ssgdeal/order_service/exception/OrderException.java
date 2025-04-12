@@ -85,4 +85,25 @@ public class OrderException extends CustomException {
             super(OrderExceptionCode.ORDER_MIN_QUANTITY);
         }
     }
+
+    public static class OrderNotOrdererException extends OrderException {
+
+        public OrderNotOrdererException() {
+            super(OrderExceptionCode.ORDER_NOT_ORDERER);
+        }
+    }
+
+    public static class OrderNotCancelException extends OrderException {
+
+        public OrderNotCancelException() {
+            super(OrderExceptionCode.ORDER_NOT_CANCEL);
+        }
+    }
+
+    public static class OrderPaymentsError extends OrderException {
+
+        public OrderPaymentsError() {
+            super(OrderExceptionCode.ORDER_PAYMENTS_ERROR);
+        }
+    }
 }

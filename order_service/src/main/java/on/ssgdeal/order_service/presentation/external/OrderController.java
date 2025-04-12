@@ -9,6 +9,8 @@ import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.order_service.application.service.OrderService;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderResponseDto;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -71,4 +74,15 @@ public class OrderController {
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
+    @PatchMapping("/{totalOrderId}")
+    public ResponseEntity<CommonResponse<CancelTotalOrderResponseDto>> cancelTotalOrder(
+        @PathVariable Long id,
+        HttpServletRequest httpServletRequest
+    ) {
+        Passport passport = passportUtil.getPassportBy(httpServletRequest);
+        LoginUserInfoDto loginUserInfo = LoginUserInfoDto.from(passport);
+        CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(id, loginUserInfo);
+        CancelTotalOrderResponseDto response = orderService.cancelTotalOrder(request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
 }

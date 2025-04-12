@@ -1,5 +1,6 @@
 package on.ssgdeal.order_service.infrastructure.persistence.jpa.querydsl;
 
+import java.util.Optional;
 import on.ssgdeal.order_service.domain.entity.TotalOrder;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrderDetailDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
@@ -16,4 +17,8 @@ public interface TotalOrderQueryRepository {
         GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto, Pageable pageable);
 
     TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
+
+    void cancelUpdateStatusTotalOrder(TotalOrder totalOrder);
+
+    Optional<TotalOrder> findTotalOrderForCancel(Long totalOrderId);
 }

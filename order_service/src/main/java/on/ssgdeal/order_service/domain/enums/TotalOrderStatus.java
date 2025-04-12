@@ -9,10 +9,6 @@ public enum TotalOrderStatus {
     FAILED("주문 실패"),
     CANCELED("주문 취소"),
     EXPIRED("주문 만료"),
-    PARTIALLY_REFUNDED("부분 반품"),
-    PARTIALLY_RETURNED("부분 환불"),
-    DELIVERING("배송 중"),
-    DELIVERED("배송 완료"),
     ;
 
     private final String description;

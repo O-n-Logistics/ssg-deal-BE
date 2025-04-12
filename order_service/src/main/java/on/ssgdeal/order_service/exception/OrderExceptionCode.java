@@ -18,7 +18,12 @@ public enum OrderExceptionCode implements ExceptionCode {
     ORDER_PROMOTION_STOCK_OVER(HttpStatus.BAD_REQUEST, "프로모션 상품의 재고가 소진되어 주문할 수 없습니다."),
     ORDER_VALID_DESTINATION(HttpStatus.BAD_REQUEST, "배송지를 다시 확인해 주세요."),
     ORDER_NOT_FOUND_TOTAL_ORDER(HttpStatus.NOT_FOUND, "총 주문 데이터를 찾을 수 없습니다."),
-    ORDER_MIN_QUANTITY(HttpStatus.BAD_REQUEST, "주문 상품의 개수가 0개일 수 없습니다.");
+    ORDER_MIN_QUANTITY(HttpStatus.BAD_REQUEST, "주문 상품의 개수가 0개일 수 없습니다."),
+    ORDER_NOT_ORDERER(HttpStatus.BAD_REQUEST, "로그인 유저와 주문자의 정보가 일치하지 않습니다."),
+    ORDER_NOT_CANCEL(HttpStatus.BAD_REQUEST, "취소될 수 없는 주문 상태입니다."),
+    ORDER_PAYMENTS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "현재 주문을 취소할 수 없습니다."),
+    ;
+
     private final HttpStatus httpStatus;
     private final String message;
 }

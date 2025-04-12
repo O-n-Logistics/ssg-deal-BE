@@ -8,6 +8,8 @@ import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.application.dto.PageDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderResponseDto;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.CreateUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
@@ -28,10 +30,16 @@ import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrderDetailDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 import on.ssgdeal.order_service.domain.entity.dtos.mapper.TotalOrderEntityLayerMapper;
+import on.ssgdeal.order_service.domain.enums.OrderStatus;
+import on.ssgdeal.order_service.domain.enums.TotalOrderStatus;
 import on.ssgdeal.order_service.domain.repository.TotalOrderRepository;
+import on.ssgdeal.order_service.exception.OrderException.OrderNotCancelException;
 import on.ssgdeal.order_service.exception.OrderException.OrderNotFoundTotalOrderException;
+import on.ssgdeal.order_service.exception.OrderException.OrderNotOrdererException;
+import on.ssgdeal.order_service.exception.OrderException.OrderPaymentsError;
 import on.ssgdeal.order_service.exception.OrderException.OrderPromotionStockOver;
 import on.ssgdeal.order_service.exception.OrderException.OrderValidDestination;
+import on.ssgdeal.order_service.infrastructure.client.payments.feign.dtos.CancelTotalOrderPaymentRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.DecreaseProductStockRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.DecreaseProductStockResponseDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dto.GetProductInfoDto;
@@ -61,6 +69,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final TotalOrderEntityLayerMapper totalOrderEntityLayerMapper;
     private final SlackService slackService;
+    private final PaymentService paymentService;
 
     @Override
     @Transactional
@@ -166,6 +175,48 @@ public class OrderServiceImpl implements OrderService {
     public ValidTotalOrderResponse validTotalOrder(Long totalOrderId) {
         boolean totalOrderExists = totalOrderRepository.existsById(totalOrderId);
         return ValidTotalOrderResponse.from(totalOrderExists);
+    }
+
+    @Override
+    @Transactional
+    public CancelTotalOrderResponseDto cancelTotalOrder(CancelTotalOrderRequestDto request) {
+        TotalOrder totalOrder = totalOrderRepository.findTotalOrderForCancel(request.orderId())
+            .orElseThrow(OrderNotFoundTotalOrderException::new);
+
+        if (!totalOrder.getOrderer().getUserId().equals(request.loginUserInfo().userId())) {
+            throw new OrderNotOrdererException();
+
+        } else if (!totalOrder.getStatus().equals(TotalOrderStatus.PAID)) {
+            throw new OrderNotCancelException();
+        }
+
+        List<Order> nonPaidOrders = totalOrder.getOrders().stream()
+            .filter(order -> order.getStatus() != OrderStatus.PAID)
+            .toList();
+
+        if (!nonPaidOrders.isEmpty()) {
+            throw new OrderNotCancelException();
+        }
+
+        requestCancelPayment(totalOrder);
+
+        totalOrderRepository.cancelUpdateStatusTotalOrder(totalOrder);
+        TotalOrder updateTotalOrder = getTotalOrderElseThrow(totalOrder.getId());
+
+        return CancelTotalOrderResponseDto.from(updateTotalOrder);
+    }
+
+    private void requestCancelPayment(TotalOrder totalOrder) {
+        CancelTotalOrderPaymentRequestDto paymentRequestDto = CancelTotalOrderPaymentRequestDto.from(
+            "총 결제 주문 취소", totalOrder.getPrice().getValue());
+
+        try {
+            log.info("총 주문 결제 취소 요청");
+            paymentService.cancelTotalOrderPayment(totalOrder.getId(), paymentRequestDto);
+        } catch (Exception e) {
+            log.error("총 주문 결제 취소 오류 : {}", e.getMessage());
+            throw new OrderPaymentsError();
+        }
     }
 
     private void sendSlackMessage(

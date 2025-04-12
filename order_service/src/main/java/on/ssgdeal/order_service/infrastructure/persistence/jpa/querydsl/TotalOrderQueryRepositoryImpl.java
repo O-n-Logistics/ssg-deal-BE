@@ -15,6 +15,7 @@ import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.pageable.enums.PageSortBy;
@@ -96,6 +97,43 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         BooleanBuilder totalOrderDetailFilter = getTotalOrderDetailFilter(getTotalOrderDetailDto);
 
         return getTotalOrderDetailInfo(totalOrderDetailFilter);
+    }
+
+    @Override
+    public void cancelUpdateStatusTotalOrder(TotalOrder requestTotalOrder) {
+        queryFactory.update(totalOrder)
+            .set(totalOrder.status, TotalOrderStatus.CANCELED)
+            .where(totalOrder.id.eq(requestTotalOrder.getId()))
+            .execute();
+        entityManager.flush();
+
+        queryFactory.update(order)
+            .set(order.status, OrderStatus.CANCELED)
+            .where(order.totalOrder.eq(requestTotalOrder))
+            .execute();
+        entityManager.flush();
+
+        queryFactory.update(totalOrderPayment)
+            .set(totalOrderPayment.paymentStatus, PaymentStatus.CANCELED)
+            .where(totalOrderPayment.totalOrder.eq(requestTotalOrder))
+            .execute();
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Override
+    public Optional<TotalOrder> findTotalOrderForCancel(Long totalOrderId) {
+        List<TotalOrder> results = queryFactory
+            .selectDistinct(totalOrder)
+            .join(totalOrder.orders, order).fetchJoin()
+            .join(totalOrder.totalOrderPayments, totalOrderPayment).fetchJoin()
+            .where(
+                totalOrder.id.eq(totalOrderId),
+                order.status.ne(OrderStatus.CANCELED)
+            )
+            .fetch();
+
+        return Optional.ofNullable(results.get(0));
     }
 
     public TotalOrder getTotalOrderDetailInfo(BooleanBuilder totalOrderDetailFilter) {
