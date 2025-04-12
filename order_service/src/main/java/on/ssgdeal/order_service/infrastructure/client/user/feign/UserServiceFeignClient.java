@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "user-service")
 public interface UserServiceFeignClient {
 
-    @PostMapping("/internal/v1/users/validations/deliveries")
+    @PostMapping("/internal/v1/users/destinations/validations")
     CommonResponse<ValidDestinationResponseDto> validDestinationRequest(
         @RequestBody ValidDestinationRequestDto requestDto);
 
