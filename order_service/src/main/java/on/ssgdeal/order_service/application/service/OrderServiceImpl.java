@@ -201,12 +201,27 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderNotCancelException();
         }
 
-        requestCancelPayment(totalOrder);
+        requestCancelTotalOrderPayment(totalOrder);
+        requestCancelTotalOrderIncreaseProduct(totalOrder);
 
         return CancelTotalOrderResponseDto.from(updateTotalOrder);
     }
 
-    private void requestCancelPayment(TotalOrder totalOrder) {
+    private void requestCancelTotalOrderIncreaseProduct(TotalOrder totalOrder) {
+        List<InCreaseProductStockRequestDto> inCreaseProductStockRequestDtos = cancelIncreaseRequest(
+            totalOrder);
+        for (InCreaseProductStockRequestDto dto : inCreaseProductStockRequestDtos) {
+            try {
+                log.info("재고 증가 요청");
+                promotionService.increaseProductStock(dto);
+            } catch (Exception e) {
+                log.error("재고 증가 요청 실패 : {} ", e.getMessage());
+                log.error("재고 증가 요청 실패 상품 : {} ", dto.toString());
+            }
+        }
+    }
+
+    private void requestCancelTotalOrderPayment(TotalOrder totalOrder) {
         CancelTotalOrderPaymentRequestDto paymentRequestDto = CancelTotalOrderPaymentRequestDto.from(
             "총 결제 주문 취소", totalOrder.getPrice().getValue());
 
@@ -377,4 +392,15 @@ public class OrderServiceImpl implements OrderService {
             product -> InCreaseProductStockRequestDto.from(product.productId(), product.optionId(),
                 product.decreaseStockAmount())).toList();
     }
+
+    protected List<InCreaseProductStockRequestDto> cancelIncreaseRequest(TotalOrder totalOrder) {
+        return totalOrder.getOrders().stream().flatMap(
+                order -> order.getOrderProducts().stream().map(
+                    product -> InCreaseProductStockRequestDto.from(product.getProductId(),
+                        product.getOptionId(), product.getQuantity().getValue())
+                )
+            )
+            .toList();
+    }
+
 }
