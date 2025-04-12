@@ -30,7 +30,6 @@ public class PromotionServiceImplTest {
     @Autowired
     private PromotionRepository promotionRepository;
 
-
     @Nested
     @DisplayName("Describe: getFinishedPromotionDetail 메서드는")
     class getFinishedPromotionDetailTest {
@@ -56,7 +55,6 @@ public class PromotionServiceImplTest {
                 assertThat(response).isNotNull();
                 assertThat(promotion.getStatus()).isEqualTo(PromotionStatus.FINISHED);
                 assertThat(promotion.getId()).isEqualTo(response.promotionId());
-
             }
         }
     }
@@ -88,15 +86,7 @@ public class PromotionServiceImplTest {
                 assertThat(promotion.getStatus()).isEqualTo(PromotionStatus.IN_PROGRESS);
                 assertThat(promotion.getId()).isEqualTo(response.promotionId());
                 assertThat(response.promotionProducts()).isNotNull();
-
             }
         }
     }
-
-
 }
-
-
-
-
-
