@@ -43,6 +43,7 @@ import on.ssgdeal.order_service.infrastructure.client.slack.feign.dto.OrderCompl
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dto.ValidDestinationRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dto.ValidDestinationResponseDto;
 import on.ssgdeal.order_service.presentation.external.dto.CreateOrderResponse;
+import on.ssgdeal.order_service.presentation.internal.dto.ValidTotalOrderResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -158,6 +159,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return GetTotalOrderDetailResponseDto.toGetTotalOrderDetailResponseDto(totalOrder);
+    }
+
+    @Override
+    public ValidTotalOrderResponse validTotalOrder(Long totalOrderId) {
+        boolean totalOrderExists = totalOrderRepository.existsById(totalOrderId);
+        return ValidTotalOrderResponse.from(totalOrderExists);
     }
 
     private void sendSlackMessage(

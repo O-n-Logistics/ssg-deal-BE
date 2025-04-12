@@ -49,4 +49,9 @@ public class TotalOrderRepositoryImpl implements TotalOrderRepository {
         return queryRepository.getTotalOrderDetail(getTotalOrderDetailDto);
     }
 
+    @Override
+    public Boolean existsById(Long totalOrderId) {
+        return jpaRepository.existsById(totalOrderId);
+    }
+
 }

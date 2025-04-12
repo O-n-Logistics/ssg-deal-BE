@@ -21,4 +21,6 @@ public interface TotalOrderRepository {
         GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto, Pageable pageable);
 
     TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto);
+
+    Boolean existsById(Long totalOrderId);
 }

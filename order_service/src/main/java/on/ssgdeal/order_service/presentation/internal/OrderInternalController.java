@@ -11,8 +11,11 @@ import on.ssgdeal.order_service.application.service.OrderService;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.presentation.internal.dto.UpdateTotalOrderSuccessRequest;
+import on.ssgdeal.order_service.presentation.internal.dto.ValidTotalOrderResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,5 +40,11 @@ public class OrderInternalController {
         orderService.createTotalOrderPaymentSuccess(requestDto, loginUserInfo);
         return ResponseEntity.ok(CommonResponse.success());
     }
-    
+
+    @GetMapping("/valid/{totalOrderId}")
+    public ResponseEntity<CommonResponse<ValidTotalOrderResponse>> validTotalOrder(
+        @PathVariable Long totalOrderId) {
+        ValidTotalOrderResponse response = orderService.validTotalOrder(totalOrderId);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
 }

@@ -7,6 +7,7 @@ import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDt
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.presentation.external.dto.CreateOrderResponse;
+import on.ssgdeal.order_service.presentation.internal.dto.ValidTotalOrderResponse;
 import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
@@ -20,4 +21,6 @@ public interface OrderService {
         Pageable pageable);
 
     GetTotalOrderDetailResponseDto getTotalOrderDetail(Long id, LoginUserInfoDto loginUserInfo);
+
+    ValidTotalOrderResponse validTotalOrder(Long totalOrderId);
 }
