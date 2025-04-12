@@ -10,6 +10,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +38,9 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
 
     private final JPAQueryFactory queryFactory;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private static List<TotalOrderStatus> getTotalOrderStatuses() {
         List<TotalOrderStatus> excludedStatuses = List.of(
             TotalOrderStatus.FAILED,
@@ -54,10 +59,14 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
             .set(totalOrder.status, TotalOrderStatus.EXPIRED)
             .where(totalOrder.id.eq(requestTotalOrder.getId()))
             .execute();
+        entityManager.flush();
+
         queryFactory.update(order)
             .set(order.status, OrderStatus.PAID)
             .where(order.totalOrder.eq(requestTotalOrder))
             .execute();
+        entityManager.flush();
+
         queryFactory.update(totalOrderPayment)
             .set(totalOrderPayment.paymentId, requestDto.paymentId())
             .set(totalOrderPayment.paymentType, requestDto.paymentType())
@@ -68,6 +77,8 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
             .set(totalOrderPayment.paymentStatus, PaymentStatus.COMPLETED)
             .where(totalOrderPayment.totalOrder.eq(requestTotalOrder))
             .execute();
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override

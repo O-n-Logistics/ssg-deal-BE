@@ -119,8 +119,9 @@ public class OrderServiceImpl implements OrderService {
         UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = totalOrderEntityLayerMapper.toUpdateTotalOrderSuccessDto(
             requestDto);
         totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
-        sendSlackMessage(loginUserInfo, totalOrder.getCreatedAt().toLocalDate(),
-            totalOrder.getPrice().getValue(), updateTotalOrderSuccessDto);
+        TotalOrder updatedTotalOrder = getTotalOrderElseThrow(totalOrder.getId());
+        sendSlackMessage(loginUserInfo, updatedTotalOrder.getCreatedAt().toLocalDate(),
+            updatedTotalOrder.getPrice().getValue(), updateTotalOrderSuccessDto);
     }
 
     @Override
