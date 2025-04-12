@@ -62,27 +62,30 @@ public class OrderController {
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{totalOrderId}")
     public ResponseEntity<CommonResponse<GetTotalOrderDetailResponseDto>> getTotalOrderDetail(
-        @PathVariable Long id,
+        @PathVariable Long totalOrderId,
         HttpServletRequest httpServletRequest
     ) {
         Passport passport = passportUtil.getPassportBy(httpServletRequest);
         LoginUserInfoDto loginUserInfo = LoginUserInfoDto.from(passport);
-        GetTotalOrderDetailResponseDto response = orderService.getTotalOrderDetail(id,
+        GetTotalOrderDetailResponseDto response = orderService.getTotalOrderDetail(totalOrderId,
             loginUserInfo);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
     @PatchMapping("/{totalOrderId}")
     public ResponseEntity<CommonResponse<CancelTotalOrderResponseDto>> cancelTotalOrder(
-        @PathVariable Long id,
+        @PathVariable Long totalOrderId,
         HttpServletRequest httpServletRequest
     ) {
         Passport passport = passportUtil.getPassportBy(httpServletRequest);
         LoginUserInfoDto loginUserInfo = LoginUserInfoDto.from(passport);
-        CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(id, loginUserInfo);
+        CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(totalOrderId,
+            loginUserInfo);
         CancelTotalOrderResponseDto response = orderService.cancelTotalOrder(request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
+
+
 }
