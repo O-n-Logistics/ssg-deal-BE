@@ -10,12 +10,14 @@ import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.common.jpa.BaseEntity;
 import on.ssgdeal.order_service.application.service.dto.CreateUserInfoDto;
 import on.ssgdeal.order_service.domain.vo.DeliveryRequest;
 import org.hibernate.annotations.SQLRestriction;
 
+@Getter
 @Entity
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

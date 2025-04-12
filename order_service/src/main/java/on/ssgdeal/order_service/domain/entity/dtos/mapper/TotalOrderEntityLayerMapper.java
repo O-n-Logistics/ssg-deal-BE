@@ -12,5 +12,7 @@ public interface TotalOrderEntityLayerMapper {
     UpdateTotalOrderSuccessDto toUpdateTotalOrderSuccessDto(
         UpdateTotalOrderSuccessRequestDto requestDto);
 
-    GetTotalOrdersUserInfoDto toGetTotalOrdersUserInfoDto(LoginUserInfoDto loginUserInfoDto);
+    GetTotalOrdersUserInfoDto toGetTotalOrdersUserInfoDto(
+        LoginUserInfoDto loginUserInfoDto);
+
 }

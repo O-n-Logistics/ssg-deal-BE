@@ -3,6 +3,7 @@ package on.ssgdeal.order_service.infrastructure.persistence.repository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.order_service.domain.entity.TotalOrder;
+import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrderDetailDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 import on.ssgdeal.order_service.domain.repository.TotalOrderRepository;
@@ -40,6 +41,12 @@ public class TotalOrderRepositoryImpl implements TotalOrderRepository {
         GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto, Pageable pageable) {
 
         return queryRepository.getTotalOrderList(getTotalOrdersUserInfoDto, pageable);
+    }
+
+    @Override
+    public TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto) {
+
+        return queryRepository.getTotalOrderDetail(getTotalOrderDetailDto);
     }
 
 }

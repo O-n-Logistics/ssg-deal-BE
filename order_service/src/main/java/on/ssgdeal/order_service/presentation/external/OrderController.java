@@ -10,6 +10,7 @@ import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.order_service.application.service.OrderService;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.presentation.external.dto.CreateOrderRequest;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,4 +58,17 @@ public class OrderController {
             pageable);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CommonResponse<GetTotalOrderDetailResponseDto>> getTotalOrderDetail(
+        @PathVariable Long id,
+        HttpServletRequest httpServletRequest
+    ) {
+        Passport passport = passportUtil.getPassportBy(httpServletRequest);
+        LoginUserInfoDto loginUserInfo = LoginUserInfoDto.from(passport);
+        GetTotalOrderDetailResponseDto response = orderService.getTotalOrderDetail(id,
+            loginUserInfo);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
 }

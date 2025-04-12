@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.CreateUserInfoDto;
+import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.TotalOrderProductInfo;
@@ -23,6 +24,7 @@ import on.ssgdeal.order_service.domain.entity.TotalOrderPayment;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderDto;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderProductDto;
 import on.ssgdeal.order_service.domain.entity.dtos.CreateTotalOrderDto;
+import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrderDetailDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 import on.ssgdeal.order_service.domain.entity.dtos.mapper.TotalOrderEntityLayerMapper;
@@ -107,8 +109,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void createTotalOrderPaymentSuccess(UpdateTotalOrderSuccessRequestDto requestDto,
-        LoginUserInfoDto loginUserInfo) {
+    public void createTotalOrderPaymentSuccess(
+        UpdateTotalOrderSuccessRequestDto requestDto,
+        LoginUserInfoDto loginUserInfo
+    ) {
         log.info("주문 성공 결제 요청 : {}", requestDto);
         TotalOrder totalOrder = getTotalOrderElseThrow(requestDto.totalOrderId());
         UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = totalOrderEntityLayerMapper.toUpdateTotalOrderSuccessDto(
@@ -119,8 +123,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public PageDto<GetTotalOrdersResponseDto> getTotalOrders(LoginUserInfoDto loginUserInfo,
-        Pageable pageable) {
+    public PageDto<GetTotalOrdersResponseDto> getTotalOrders(
+        LoginUserInfoDto loginUserInfo,
+        Pageable pageable
+    ) {
         log.info("총 주문 리스트 조회 요청");
         GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto = totalOrderEntityLayerMapper.toGetTotalOrdersUserInfoDto(
             loginUserInfo);
@@ -138,6 +144,20 @@ public class OrderServiceImpl implements OrderService {
         );
 
         return PageDto.from(totalMapperPage);
+    }
+
+    @Override
+    public GetTotalOrderDetailResponseDto getTotalOrderDetail(Long totalOrderId,
+        LoginUserInfoDto loginUserInfo) {
+        log.info("주문 상세 내용 요청");
+        GetTotalOrderDetailDto getTotalOrderDetailDto = GetTotalOrderDetailDto.from(totalOrderId,
+            loginUserInfo.userId());
+        TotalOrder totalOrder = totalOrderRepository.getTotalOrderDetail(getTotalOrderDetailDto);
+        if (totalOrder == null) {
+            throw new OrderNotFoundTotalOrderException();
+        }
+
+        return GetTotalOrderDetailResponseDto.toGetTotalOrderDetailResponseDto(totalOrder);
     }
 
     private void sendSlackMessage(

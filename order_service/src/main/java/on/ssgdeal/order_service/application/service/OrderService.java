@@ -2,6 +2,7 @@ package on.ssgdeal.order_service.application.service;
 
 import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
@@ -17,4 +18,6 @@ public interface OrderService {
 
     PageDto<GetTotalOrdersResponseDto> getTotalOrders(LoginUserInfoDto loginUserInfo,
         Pageable pageable);
+
+    GetTotalOrderDetailResponseDto getTotalOrderDetail(Long id, LoginUserInfoDto loginUserInfo);
 }

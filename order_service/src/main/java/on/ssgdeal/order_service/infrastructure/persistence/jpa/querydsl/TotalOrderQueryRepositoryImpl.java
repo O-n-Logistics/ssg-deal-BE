@@ -2,6 +2,7 @@ package on.ssgdeal.order_service.infrastructure.persistence.jpa.querydsl;
 
 import static on.ssgdeal.order_service.domain.entity.QOrder.order;
 import static on.ssgdeal.order_service.domain.entity.QOrderProduct.orderProduct;
+import static on.ssgdeal.order_service.domain.entity.QOrderer.orderer;
 import static on.ssgdeal.order_service.domain.entity.QTotalOrder.totalOrder;
 import static on.ssgdeal.order_service.domain.entity.QTotalOrderPayment.totalOrderPayment;
 
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.pageable.enums.PageSortBy;
 import on.ssgdeal.order_service.domain.entity.TotalOrder;
+import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrderDetailDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 import on.ssgdeal.order_service.domain.enums.OrderStatus;
@@ -66,6 +68,26 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         return new PageImpl<>(totalOrderList, pageable, total);
     }
 
+    @Override
+    public TotalOrder getTotalOrderDetail(GetTotalOrderDetailDto getTotalOrderDetailDto) {
+        BooleanBuilder totalOrderDetailFilter = getTotalOrderDetailFilter(getTotalOrderDetailDto);
+
+        return getTotalOrderDetailInfo(totalOrderDetailFilter);
+    }
+
+    public TotalOrder getTotalOrderDetailInfo(BooleanBuilder totalOrderDetailFilter) {
+        return queryFactory
+            .selectDistinct(totalOrder)
+            .from(totalOrder)
+            .join(totalOrder.totalOrderPayments, totalOrderPayment).fetchJoin()
+            .join(totalOrder.orders, order).fetchJoin()
+            .join(totalOrder.orderer, orderer).fetchJoin()
+            .join(order.orderProducts, orderProduct).fetchJoin()
+            .where(totalOrderDetailFilter)
+            .fetchOne();
+    }
+
+
     private List<TotalOrder> getTotalOrder(GetTotalOrdersUserInfoDto getTotalOrdersUserInfoDto,
         Pageable pageable, BooleanBuilder totalOrderFilter) {
         OrderSpecifier<?>[] orderSpecifiers = getOrderSpecifiers(pageable);
@@ -110,6 +132,13 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
     private BooleanBuilder getTotalOrderFilter(GetTotalOrdersUserInfoDto dto) {
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(totalOrder.createdBy.eq(dto.userId()));
+        return builder;
+    }
+
+    private BooleanBuilder getTotalOrderDetailFilter(GetTotalOrderDetailDto dto) {
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(totalOrder.createdBy.eq(dto.userId()));
+        builder.and(totalOrder.id.eq(dto.totalOrderId()));
         return builder;
     }
 
