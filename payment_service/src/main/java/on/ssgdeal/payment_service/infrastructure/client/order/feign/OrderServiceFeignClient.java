@@ -1,6 +1,7 @@
 package on.ssgdeal.payment_service.infrastructure.client.order.feign;
 
 import on.ssgdeal.common.presentation.dto.CommonResponse;
+import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.CreateOrderPaymentFailRequestDto;
 import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.CreateOrderPaymentSuccessRequestDto;
 import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.GetValidTotalOrderId;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -18,4 +19,8 @@ public interface OrderServiceFeignClient {
     @PostMapping("/internal/v1/orders/payments/success")
     CommonResponse<Void> createOrderPaymentSuccess(
         @RequestBody CreateOrderPaymentSuccessRequestDto requestDto);
+
+    @PostMapping("/internal/v1/orders/payments/success")
+    CommonResponse<Void> createOrderPaymentFail(
+        @RequestBody CreateOrderPaymentFailRequestDto requestDto);
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.payment_service.application.service.OrderService;
 import on.ssgdeal.payment_service.infrastructure.client.order.feign.OrderServiceFeignClient;
+import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.CreateOrderPaymentFailRequestDto;
 import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.CreateOrderPaymentSuccessRequestDto;
 import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.GetValidTotalOrderId;
 import org.springframework.stereotype.Service;
@@ -25,5 +26,11 @@ public class OrderServiceImpl implements OrderService {
     public void createOrderPaymentSuccess(CreateOrderPaymentSuccessRequestDto requestDto) {
         log.info("createOrderPaymentSuccess : {}", requestDto.toString());
         orderServiceFeignClient.createOrderPaymentSuccess(requestDto);
+    }
+
+    @Override
+    public void createOrderPaymentFail(CreateOrderPaymentFailRequestDto requestDto) {
+        log.info("CreateOrderPaymentFailRequestDto : {}", requestDto.toString());
+        orderServiceFeignClient.createOrderPaymentFail(requestDto);
     }
 }

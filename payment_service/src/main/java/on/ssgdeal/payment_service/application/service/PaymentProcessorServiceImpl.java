@@ -12,6 +12,7 @@ import on.ssgdeal.payment_service.exception.PaymentException.PaymentConfirmExcep
 import on.ssgdeal.payment_service.exception.PaymentException.PaymentNotFoundException;
 import on.ssgdeal.payment_service.exception.PaymentExceptionCode;
 import on.ssgdeal.payment_service.infrastructure.client.TossPaymentClient.PaymentClient;
+import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.CreateOrderPaymentFailRequestDto;
 import on.ssgdeal.payment_service.infrastructure.client.order.feign.dto.CreateOrderPaymentSuccessRequestDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,9 @@ public class PaymentProcessorServiceImpl implements PaymentProcessorService {
             return OrderPaymentResponseDto.success(responseDto, managedPayment);
         } catch (PaymentConfirmException e) {
             managedPayment.fail(e.getFailReason());
+            final var failRequestDto = CreateOrderPaymentFailRequestDto.from(
+                managedPayment);
+            orderService.createOrderPaymentFail(failRequestDto);
             return OrderPaymentResponseDto.fail(managedPayment);
         }
     }
