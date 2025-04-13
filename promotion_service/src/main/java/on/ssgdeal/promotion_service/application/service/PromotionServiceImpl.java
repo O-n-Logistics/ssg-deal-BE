@@ -3,6 +3,7 @@ package on.ssgdeal.promotion_service.application.service;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.promotion_service.application.service.dto.*;
+import on.ssgdeal.promotion_service.application.service.dto.mapper.PromotionApplicationMapper;
 import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
@@ -22,10 +23,11 @@ import java.time.LocalDate;
 public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
+    private final PromotionApplicationMapper promotionApplicationMapper;
 
     @Override
     public PageDto<GetCompaniesResponseDto> getCompanies(GetCompaniesRequestDto requestDto) {
-        GetCompaniesConditionDto conditionDto = GetCompaniesRequestDto.toDto(requestDto);
+        GetCompaniesConditionDto conditionDto = promotionApplicationMapper.toConditionDto(requestDto);
         Page<Company> result = promotionRepository.findCompanies(conditionDto);
         Page<GetCompaniesResponseDto> response = result.map(GetCompaniesResponseDto::from);
         return PageDto.from(response);

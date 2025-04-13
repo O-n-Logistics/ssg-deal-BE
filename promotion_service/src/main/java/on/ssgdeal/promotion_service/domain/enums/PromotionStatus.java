@@ -3,6 +3,7 @@ package on.ssgdeal.promotion_service.domain.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import on.ssgdeal.promotion_service.exception.PromotionException;
 
 import java.util.Arrays;
 
@@ -19,6 +20,6 @@ public enum PromotionStatus {
         return Arrays.stream(PromotionStatus.values())
                 .filter(status -> status.name().equalsIgnoreCase(value))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로모션 상태 값입니다."));
+                .orElseThrow(PromotionException.InvalidPromotionStatusException::new);
     }
 }
