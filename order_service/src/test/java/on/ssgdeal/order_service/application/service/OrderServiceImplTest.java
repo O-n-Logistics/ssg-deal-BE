@@ -18,6 +18,7 @@ import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.common.auth.enums.AuthRole;
 import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
@@ -39,8 +40,11 @@ import on.ssgdeal.order_service.infrastructure.client.user.feign.dtos.ValidDesti
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dtos.ValidDestinationResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,6 +55,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @Slf4j
 @SpringBootTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("OrderServiceImpl 클래스의")
 class OrderServiceImplTest {
 
@@ -177,6 +182,7 @@ class OrderServiceImplTest {
         return new OrderCompleteSendSlackResponseDto(1L);
     }
 
+    @Order(1)
     @Nested
     @DisplayName("Describe: createOrder 메서드는")
     class createOrderTest {
@@ -294,6 +300,7 @@ class OrderServiceImplTest {
         }
     }
 
+    @Order(2)
     @Nested
     @DisplayName("Describe: createTotalOrderPaymentSuccess 메서드는")
     class createTotalOrderPaymentSuccess {
@@ -345,6 +352,7 @@ class OrderServiceImplTest {
         }
     }
 
+    @Order(3)
     @Nested
     @DisplayName("Describe: getTotalOrders 메서드는")
     class getListTotalOrder {
@@ -370,7 +378,34 @@ class OrderServiceImplTest {
                 assertThat(result.content()).hasSize(3);
                 assertThat(result.content().get(0).totalOrderId()).isEqualTo(1L);
                 assertThat(result.totalElements()).isEqualTo(3);
-                log.info(result.content().toString());
+            }
+        }
+    }
+
+    @Order(4)
+    @Nested
+    @DisplayName("Describe: getTotalOrders 메서드는")
+    class getDetailTotalOrder {
+
+        @Nested
+        @DisplayName("Context: 들어온 유저와 일치했을 때")
+        class successTest {
+
+            @Test
+            @DisplayName("It: 유저의 주문 상세 정보를 반환한다. ")
+            void createOrderTest() throws Exception {
+
+                //given
+                var loginUserInfo = createFakeLoginUserInfo();
+
+                // when
+                GetTotalOrderDetailResponseDto result = orderService.getTotalOrderDetail(1L,
+                    loginUserInfo);
+
+                // then
+                assertThat(result).isNotNull();
+                assertThat(result.totalOrderId()).isEqualTo(1L);
+                assertThat(result.destination()).isEqualTo("서울시 광진구");
             }
         }
     }
