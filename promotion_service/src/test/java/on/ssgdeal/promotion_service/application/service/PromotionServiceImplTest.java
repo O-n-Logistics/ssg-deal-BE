@@ -1,8 +1,10 @@
 package on.ssgdeal.promotion_service.application.service;
 
-import on.ssgdeal.promotion_service.application.service.dto.GetFinishedPromotionDetailResponseDto;
-import on.ssgdeal.promotion_service.application.service.dto.GetInProgressPromotionDetailResponseDto;
+import on.ssgdeal.common.application.dto.PageDto;
+import on.ssgdeal.promotion_service.application.service.dto.*;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import org.hibernate.AssertionFailure;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,6 +32,9 @@ public class PromotionServiceImplTest {
 
     @Autowired
     private PromotionRepository promotionRepository;
+
+    @Autowired
+    private PromotionApplicationMapper promotionApplicationMapper;
 
     @Nested
     @DisplayName("Describe: getFinishedPromotionDetail 메서드는")
@@ -89,4 +95,41 @@ public class PromotionServiceImplTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Describe: getPromotions 메서드는")
+    class getPromotionsTest {
+
+        @Nested
+        @DisplayName("Context: 유효한 요청으로 프로모션 리스트를 조회할 때")
+        class getPromotionsSuccessTest {
+
+            @Test
+            @DisplayName("It: 조건에 맞는 프로모션 리스트를 반환하다.")
+            void getPromotionsTest() throws Exception {
+
+                //given
+                Pageable pageable = PageRequest.of(0, 10);
+                GetPromotionsConditionDto conditionDto = GetPromotionsConditionDto.builder()
+                        .filter(PromotionStatus.FINISHED)
+                        .pageable(pageable)
+                        .build();
+
+                GetPromotionsRequestDto requestDto = GetPromotionsRequestDto.builder()
+                        .filter("FINISHED")
+                        .pageable(pageable)
+                        .build();
+
+                //when
+                PageDto<GetPromotionsResponseDto> response = promotionService.getPromotions(requestDto);
+                Page<GetPromotionsDto> result = promotionRepository.findPromotions(conditionDto);
+                Page<GetPromotionsResponseDto> expectedResponse = result.map(promotionApplicationMapper::toResponseDto);
+
+                //then
+                assertThat(response).isNotNull();
+                assertThat(expectedResponse.get().count()).isEqualTo(response.content().size());
+            }
+        }
+    }
+
 }
