@@ -65,4 +65,10 @@ public class Order extends BaseEntity {
     public void addOrderProductDependency(List<OrderProduct> orderProducts) {
         this.orderProducts = orderProducts;
     }
+
+    public void cancel() {
+        if (status != OrderStatus.CANCELED) {
+            status = OrderStatus.CANCELED;
+        }
+    }
 }

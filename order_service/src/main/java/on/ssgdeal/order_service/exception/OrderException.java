@@ -99,4 +99,11 @@ public class OrderException extends CustomException {
             super(OrderExceptionCode.ORDER_PAYMENTS_ERROR);
         }
     }
+
+    public static class OrderNotFoundOrderException extends OrderException {
+
+        public OrderNotFoundOrderException() {
+            super(OrderExceptionCode.ORDER_NOT_FOUND_ORDER);
+        }
+    }
 }

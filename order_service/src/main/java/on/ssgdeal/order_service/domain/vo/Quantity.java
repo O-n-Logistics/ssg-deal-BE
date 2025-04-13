@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import on.ssgdeal.order_service.exception.OrderException.OrderMinPriceException;
+import on.ssgdeal.order_service.exception.OrderException.OrderMinQuantityException;
 
 @Getter
 @Embeddable
@@ -24,7 +24,7 @@ public class Quantity {
 
     private void validate(final Long value) {
         if (value == null || value <= 0) {
-            throw new OrderMinPriceException();
+            throw new OrderMinQuantityException();
         }
     }
 }

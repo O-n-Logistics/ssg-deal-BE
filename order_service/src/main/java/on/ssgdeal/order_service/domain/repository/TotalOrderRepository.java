@@ -31,4 +31,5 @@ public interface TotalOrderRepository {
     TotalOrder findTotalOrderForFail(Long totalOrderId);
 
     TotalOrder findOrderForCancel(Long totalOrderId, Long orderId);
+
 }

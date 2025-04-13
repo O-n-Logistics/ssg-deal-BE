@@ -234,13 +234,12 @@ public class OrderServiceImpl implements OrderService {
     public CancelOrderResponseDto cancelOrder(CancelOrderRequestDto request) {
         TotalOrder totalOrder = totalOrderRepository.findOrderForCancel(
             request.totalOrderId(), request.orderId());
-        totalOrderRepository.cancelUpdateStatusTotalOrder(totalOrder);
-        TotalOrder updateTotalOrder = getTotalOrderElseThrow(totalOrder.getId());
-        if (updateTotalOrder.getPrice().getValue().equals(0L)) {
-            updateTotalOrder.updateCancelStatus();
-        }
-        updateTotalOrder.updateCancelTotalPrice(
+        totalOrder.cancelSpecificOrder(request.orderId());
+        totalOrder.updateCancelTotalPrice(
             totalOrder.getOrders().get(0).getPrice().getValue());
+        if (totalOrder.getPrice().getValue().equals(0L) || totalOrder.getPrice().getValue() < 0L) {
+            totalOrder.updateCancelStatus();
+        }
         requestCancelOrderPayment(totalOrder);
         requestCancelTotalOrderIncreaseProduct(totalOrder);
         return CancelOrderResponseDto.from(totalOrder.getOrders().get(0).getId());

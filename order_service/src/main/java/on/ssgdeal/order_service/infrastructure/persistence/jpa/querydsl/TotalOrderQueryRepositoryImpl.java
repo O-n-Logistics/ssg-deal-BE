@@ -165,7 +165,8 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         List<TotalOrder> results = queryFactory
             .selectDistinct(totalOrder)
             .from(totalOrder)
-            .join(totalOrder.orders, order).fetchJoin()
+            .join(totalOrder.orders, order)
+            .join(order.orderProducts, orderProduct)
             .where(
                 totalOrder.id.eq(totalOrderId),
                 order.id.eq(orderId)
@@ -175,6 +176,11 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
             throw new OrderNotFoundTotalOrderException();
         }
         return results.get(0);
+    }
+
+    @Override
+    public void cancelUpdateStatusOrder(TotalOrder totalOrder, Long orderId) {
+
     }
 
     public TotalOrder getTotalOrderDetailInfo(BooleanBuilder totalOrderDetailFilter) {

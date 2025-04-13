@@ -25,6 +25,7 @@ import on.ssgdeal.order_service.domain.entity.dtos.UpdateCancelOrderSuccessDto;
 import on.ssgdeal.order_service.domain.enums.TotalOrderStatus;
 import on.ssgdeal.order_service.domain.vo.TotalOrderNumber;
 import on.ssgdeal.order_service.domain.vo.TotalPrice;
+import on.ssgdeal.order_service.exception.OrderException.OrderNotFoundOrderException;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -118,5 +119,14 @@ public class TotalOrder extends BaseEntity {
 
     public void updateCancelStatus() {
         this.status = TotalOrderStatus.CANCELED;
+    }
+
+    public void cancelSpecificOrder(Long orderId) {
+        Order order = this.orders.stream()
+            .filter(o -> o.getId().equals(orderId))
+            .findFirst()
+            .orElseThrow(OrderNotFoundOrderException::new);
+
+        order.cancel();
     }
 }
