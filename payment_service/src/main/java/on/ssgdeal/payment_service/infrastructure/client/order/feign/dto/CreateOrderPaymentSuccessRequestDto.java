@@ -1,6 +1,6 @@
 package on.ssgdeal.payment_service.infrastructure.client.order.feign.dto;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import on.ssgdeal.payment_service.domain.entity.Payment;
 import on.ssgdeal.payment_service.domain.enums.PaymentMethod;
@@ -10,7 +10,7 @@ import on.ssgdeal.payment_service.domain.enums.PaymentType;
 public record CreateOrderPaymentSuccessRequestDto(
     Long totalOrderId,
     Long paymentId,
-    Timestamp paymentDate,
+    LocalDateTime paymentDate,
     PaymentType paymentType,
     PaymentMethod paymentMethod,
     Long paymentAmount,
@@ -21,7 +21,7 @@ public record CreateOrderPaymentSuccessRequestDto(
         return CreateOrderPaymentSuccessRequestDto.builder()
             .totalOrderId(payment.getTotalOrderId())
             .paymentId(payment.getId())
-            .paymentDate(Timestamp.valueOf(payment.getCreatedAt()))
+            .paymentDate(payment.getCreatedAt())
             .paymentType(payment.getPaymentType())
             .paymentMethod(payment.getPaymentMethod())
             .paymentAmount(payment.getPaymentAmount())
