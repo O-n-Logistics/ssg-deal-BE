@@ -10,7 +10,6 @@ import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.payment_service.application.service.PaymentProcessorService;
 import on.ssgdeal.payment_service.application.service.PaymentService;
 import on.ssgdeal.payment_service.application.service.dto.response.GetPaymentsResponseDto;
-import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentCancelResponseDto;
 import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentResponseDto;
 import on.ssgdeal.payment_service.presentation.external.dto.OrderPaymentRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,13 +39,6 @@ public class PaymentController {
         final Passport passport = passportUtil.getPassportBy(servletRequest);
         final var requestDto = request.toDto(passport.getUserId());
         final var responseDto = paymentProcessorService.orderPayment(requestDto);
-        return ResponseEntity.ok(CommonResponse.success(responseDto));
-    }
-
-    @PostMapping("/{totalOrderId}/cancel")
-    public ResponseEntity<CommonResponse<OrderPaymentCancelResponseDto>> orderCancelPayment(
-        @PathVariable Long totalOrderId) {
-        final var responseDto = paymentProcessorService.orderPaymentCancel(totalOrderId);
         return ResponseEntity.ok(CommonResponse.success(responseDto));
     }
 
