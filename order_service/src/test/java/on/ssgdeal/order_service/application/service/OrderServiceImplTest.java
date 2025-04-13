@@ -19,6 +19,8 @@ import on.ssgdeal.common.auth.enums.AuthRole;
 import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.order_service.application.service.dto.CancelOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.CancelOrderResponseDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderRequestDto;
+import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderResponseDto;
 import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
@@ -523,4 +525,52 @@ class OrderServiceImplTest {
             }
         }
     }
+
+    @Order(6)
+    @Nested
+    @DisplayName("Describe: cancelTotalOrder 메서드는")
+    class cancelTotalOrderTest {
+
+        @Nested
+        @DisplayName("Context: 조건 만족(유저 일치, TotalOrder 상태가 주문 완료일 때) 상태면")
+        class successTest {
+
+            @Test
+            @DisplayName("It: 해당 주문을 캔슬한다. ")
+            void test() throws Exception {
+
+                //given
+                var loginUserInfo = createFakeLoginUserInfo();
+                CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(1L,
+                    loginUserInfo);
+
+                // when
+                CancelTotalOrderResponseDto result = orderService.cancelTotalOrder(request);
+
+                // then
+                assertThat(result).isNotNull();
+                assertThat(result.orderId()).isEqualTo(1L);
+            }
+        }
+
+        @Nested
+        @DisplayName("Context: 주문이 이미 취소된 상태면")
+        class failTest {
+
+            @Test
+            @DisplayName("It: 에러를 반환한다.")
+            void test() throws Exception {
+                //given
+                var loginUserInfo = createFakeLoginUserInfo();
+                CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(1L,
+                    loginUserInfo);
+
+                // when & then
+                assertThatThrownBy(
+                    () -> orderService.cancelTotalOrder(request))
+                    .isInstanceOf(OrderNotFoundTotalOrderException.class);
+            }
+        }
+    }
+
 }
