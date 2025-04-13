@@ -1,13 +1,16 @@
 package on.ssgdeal.promotion_service.application.service;
 
 import lombok.RequiredArgsConstructor;
-import on.ssgdeal.promotion_service.application.service.dto.GetFinishedPromotionDetailResponseDto;
-import on.ssgdeal.promotion_service.application.service.dto.GetInProgressPromotionDetailResponseDto;
+import on.ssgdeal.common.application.dto.PageDto;
+import on.ssgdeal.promotion_service.application.service.dto.*;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import on.ssgdeal.promotion_service.exception.PromotionException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,15 @@ import java.time.LocalDate;
 public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
+    private final PromotionApplicationMapper promotionApplicationMapper;
+
+    @Override
+    public PageDto<GetPromotionsResponseDto> getPromotions(GetPromotionsRequestDto requestDto) {
+        GetPromotionsConditionDto conditionDto = GetPromotionsRequestDto.toDto(requestDto);
+        Page<GetPromotionsDto> result = promotionRepository.findPromotions(conditionDto);
+        Page<GetPromotionsResponseDto> response = result.map(promotionApplicationMapper::toResponseDto);
+        return PageDto.from(response);
+    }
 
     @Override
     public GetFinishedPromotionDetailResponseDto getFinishedPromotionDetail(Long promotionId) {

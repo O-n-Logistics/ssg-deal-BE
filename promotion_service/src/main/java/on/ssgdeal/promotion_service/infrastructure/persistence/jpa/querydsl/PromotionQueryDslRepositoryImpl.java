@@ -2,13 +2,15 @@ package on.ssgdeal.promotion_service.infrastructure.persistence.jpa.querydsl;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
+import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,6 +27,7 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
 
     private final JPAQueryFactory queryFactory;
 
+    //TODO : 정렬 조건 추가
     @Override
     public Optional<GetInProgressPromotionDetailDto> findPromotionWithProductsById(
             Long promotionId,
@@ -64,6 +67,8 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
 
         boolean hasNext = products.size() > pageable.getPageSize();
 
+        //TODO : Slice에 경우 다음 값에 대한 정보 추가
+
         Slice<GetInProgressPromotionDetailDto.ProductDetailDto> productSlice =
                 new SliceImpl<>(products, pageable, hasNext);
 
@@ -79,4 +84,35 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
                 productSlice
         ));
     }
+
+    @Override
+    public Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto) {
+        List<GetPromotionsDto> promotions = queryFactory
+                .select(Projections.constructor(GetPromotionsDto.class,
+                        promotion.id.as("promotionId"),
+                        promotion.title.as("promotionTitle"),
+                        promotion.previewUrl.value.as("promotionPreviewUrl"),
+                        promotion.startPromotionDate.as("startPromotionDate"),
+                        promotion.endPromotionDate.as("endPromotionDate")
+                ))
+                .from(promotion)
+                .where(
+                        containsKeyword(conditionDto.keyword()),
+                        filterStatus(conditionDto.filter())
+                )
+                .offset(conditionDto.pageable().getOffset())
+                .limit(conditionDto.pageable().getPageSize())
+                .fetch();
+
+        return new PageImpl<>(promotions, conditionDto.pageable(), promotions.size());
+    }
+
+    private BooleanExpression containsKeyword(String keyword) {
+        return keyword != null ? promotion.title.containsIgnoreCase(keyword) : null;
+    }
+
+    private BooleanExpression filterStatus(PromotionStatus filter) {
+        return filter != null ? promotion.status.eq(filter) : null;
+    }
+
 }
