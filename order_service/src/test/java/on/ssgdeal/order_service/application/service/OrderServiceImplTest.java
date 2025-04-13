@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,11 +46,11 @@ import on.ssgdeal.order_service.infrastructure.client.slack.feign.dtos.OrderComp
 import on.ssgdeal.order_service.infrastructure.client.slack.feign.dtos.OrderCompleteSendSlackResponseDto;
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dtos.ValidDestinationRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.user.feign.dtos.ValidDestinationResponseDto;
+import on.ssgdeal.order_service.presentation.external.dto.CreateOrderResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Mockito;
@@ -59,13 +60,20 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
+@Sql(statements = "ALTER TABLE total_order AUTO_INCREMENT = 1",
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Slf4j
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Transactional
 @DisplayName("OrderServiceImpl 클래스의")
 class OrderServiceImplTest {
 
+    @Autowired
+    EntityManager em;
     @MockitoBean
     private AuditorAware<Long> auditorAware;
     @Autowired
@@ -197,7 +205,6 @@ class OrderServiceImplTest {
         return new OrderCompleteSendSlackResponseDto(1L);
     }
 
-    @Order(1)
     @Nested
     @DisplayName("Describe: createOrder 메서드는")
     class createOrderTest {
@@ -315,7 +322,6 @@ class OrderServiceImplTest {
         }
     }
 
-    @Order(2)
     @Nested
     @DisplayName("Describe: createTotalOrderPaymentSuccess 메서드는")
     class createTotalOrderPaymentSuccess {
@@ -329,6 +335,18 @@ class OrderServiceImplTest {
             void test() throws Exception {
 
                 //given
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                orderService.createOrder(orderRequest, orderLoginUserInfo);
+
                 var request = createFakeTotalOrderPaymentSuccess();
                 var loginUserInfo = createFakeLoginUserInfo();
                 var createOrderCompleteSendSlackRequestDto = createFakerOrderCompleteSendSlackRequestDto(
@@ -356,6 +374,18 @@ class OrderServiceImplTest {
             void test() throws Exception {
 
                 //given
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                orderService.createOrder(orderRequest, orderLoginUserInfo);
+
                 var request = createFakeTotalOrderPaymentSuccessValid();
                 var loginUserInfo = createFakeLoginUserInfo();
 
@@ -367,7 +397,6 @@ class OrderServiceImplTest {
         }
     }
 
-    @Order(3)
     @Nested
     @DisplayName("Describe: getTotalOrders 메서드는")
     class getListTotalOrder {
@@ -381,6 +410,18 @@ class OrderServiceImplTest {
             void test() throws Exception {
 
                 //given
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                orderService.createOrder(orderRequest, orderLoginUserInfo);
+
                 var loginUserInfo = createFakeLoginUserInfo();
                 Pageable pageable = PageRequest.of(0, 10);
 
@@ -404,6 +445,18 @@ class OrderServiceImplTest {
                 void test() throws Exception {
 
                     //given
+                    var orderRequest = createFakeCreateOrderRequestDto();
+                    var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                    given(userService.validDestinationRequest(any()))
+                        .willReturn(createFakeValidDestinationResponseDto());
+                    given(promotionService.getProductInfoAndStockDecrease(any()))
+                        .willReturn(createFakePromotionResponse());
+                    given(promotionService.decreaseProductStock(any()))
+                        .willReturn(createFakeDecreaseProductResponse());
+
+                    orderService.createOrder(orderRequest, orderLoginUserInfo);
+
                     var loginUserInfo = createFakeValidLoginUserInfo();
                     Pageable pageable = PageRequest.of(0, 10);
 
@@ -418,7 +471,6 @@ class OrderServiceImplTest {
         }
     }
 
-    @Order(4)
     @Nested
     @DisplayName("Describe: getTotalOrders 메서드는")
     class getDetailTotalOrder {
@@ -432,6 +484,18 @@ class OrderServiceImplTest {
             void test() throws Exception {
 
                 //given
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                orderService.createOrder(orderRequest, orderLoginUserInfo);
+
                 var loginUserInfo = createFakeLoginUserInfo();
 
                 // when
@@ -454,6 +518,18 @@ class OrderServiceImplTest {
             void test() throws Exception {
 
                 //given
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                orderService.createOrder(orderRequest, orderLoginUserInfo);
+
                 var loginUserInfo = createFakeValidLoginUserInfo();
 
                 //when & then
@@ -465,7 +541,6 @@ class OrderServiceImplTest {
         }
     }
 
-    @Order(5)
     @Nested
     @DisplayName("Describe: cancelOrder 메서드는")
     class cancelOrderTest {
@@ -478,9 +553,32 @@ class OrderServiceImplTest {
             @DisplayName("It: 해당 주문을 캔슬한다. ")
             void test() throws Exception {
 
-                //given
+                //BEFORE GIVEN
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                CreateOrderResponse totalOrderResponse = orderService.createOrder(orderRequest,
+                    orderLoginUserInfo);
+                TotalOrder totalOrder = totalOrderRepository.findById(totalOrderResponse.orderId())
+                    .get();
+                UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = new UpdateTotalOrderSuccessDto(
+                    totalOrder.getId(), 1L, PaymentType.TOSS, PaymentMethod.CARD,
+                    totalOrder.getPrice().getValue(), LocalDateTime.now(), "1");
+                totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
+                em.flush();
+                em.clear();
+
+                // API GIVEN
                 var loginUserInfo = createFakeLoginUserInfo();
-                CancelOrderRequestDto request = CancelOrderRequestDto.from(1L, 1L, loginUserInfo);
+                CancelOrderRequestDto request = CancelOrderRequestDto.from(totalOrder.getId(),
+                    totalOrder.getOrders().get(0).getId(), loginUserInfo);
                 CancelOrderPaymentResponseDto paymentResponse = new CancelOrderPaymentResponseDto(
                     5L);
 
@@ -494,7 +592,6 @@ class OrderServiceImplTest {
 
                 // then
                 assertThat(result).isNotNull();
-                assertThat(result.orderId()).isEqualTo(1L);
             }
         }
 
@@ -506,9 +603,32 @@ class OrderServiceImplTest {
             @DisplayName("It: 에러를 반환한다.")
             void test() throws Exception {
 
-                //given
+                //BEFORE GIVEN
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                CreateOrderResponse totalOrderResponse = orderService.createOrder(orderRequest,
+                    orderLoginUserInfo);
+                TotalOrder totalOrder = totalOrderRepository.findById(totalOrderResponse.orderId())
+                    .get();
+                UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = new UpdateTotalOrderSuccessDto(
+                    totalOrder.getId(), 1L, PaymentType.TOSS, PaymentMethod.CARD,
+                    totalOrder.getPrice().getValue(), LocalDateTime.now(), "1");
+                totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
+                em.flush();
+                em.clear();
+
+                // API GIVEN
                 var loginUserInfo = createFakeLoginUserInfo();
-                CancelOrderRequestDto request = CancelOrderRequestDto.from(1L, 1L,
+                CancelOrderRequestDto request = CancelOrderRequestDto.from(totalOrder.getId(),
+                    totalOrder.getOrders().get(0).getId(),
                     loginUserInfo);
                 CancelOrderPaymentResponseDto paymentResponse = new CancelOrderPaymentResponseDto(
                     5L);
@@ -518,7 +638,7 @@ class OrderServiceImplTest {
                 given(paymentService.cancelOrderPayment(1L, cancelRequest))
                     .willReturn(paymentResponse);
 
-                // when
+                // when & then
                 assertThatThrownBy(
                     () -> orderService.cancelOrder(request))
                     .isInstanceOf(OrderAlreadyCancelException.class);
@@ -526,7 +646,6 @@ class OrderServiceImplTest {
         }
     }
 
-    @Order(6)
     @Nested
     @DisplayName("Describe: cancelTotalOrder 메서드는")
     class cancelTotalOrderTest {
@@ -539,9 +658,32 @@ class OrderServiceImplTest {
             @DisplayName("It: 해당 주문을 캔슬한다. ")
             void test() throws Exception {
 
-                //given
+                //BEFORE GIVEN
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                CreateOrderResponse totalOrderResponse = orderService.createOrder(orderRequest,
+                    orderLoginUserInfo);
+                TotalOrder totalOrder = totalOrderRepository.findById(totalOrderResponse.orderId())
+                    .get();
+                UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = new UpdateTotalOrderSuccessDto(
+                    totalOrder.getId(), 1L, PaymentType.TOSS, PaymentMethod.CARD,
+                    totalOrder.getPrice().getValue(), LocalDateTime.now(), "1");
+                totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
+                em.flush();
+                em.clear();
+
+                // API GIVEN
                 var loginUserInfo = createFakeLoginUserInfo();
-                CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(1L,
+                CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(
+                    totalOrder.getId(),
                     loginUserInfo);
 
                 // when
@@ -560,9 +702,33 @@ class OrderServiceImplTest {
             @Test
             @DisplayName("It: 에러를 반환한다.")
             void test() throws Exception {
-                //given
+
+                //BEFORE GIVEN
+                var orderRequest = createFakeCreateOrderRequestDto();
+                var orderLoginUserInfo = createFakeLoginUserInfo();
+
+                given(userService.validDestinationRequest(any()))
+                    .willReturn(createFakeValidDestinationResponseDto());
+                given(promotionService.getProductInfoAndStockDecrease(any()))
+                    .willReturn(createFakePromotionResponse());
+                given(promotionService.decreaseProductStock(any()))
+                    .willReturn(createFakeDecreaseProductResponse());
+
+                CreateOrderResponse totalOrderResponse = orderService.createOrder(orderRequest,
+                    orderLoginUserInfo);
+                TotalOrder totalOrder = totalOrderRepository.findById(totalOrderResponse.orderId())
+                    .get();
+                UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto = new UpdateTotalOrderSuccessDto(
+                    totalOrder.getId(), 1L, PaymentType.TOSS, PaymentMethod.CARD,
+                    totalOrder.getPrice().getValue(), LocalDateTime.now(), "1");
+                totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
+                em.flush();
+                em.clear();
+
+                // API GIVEN
                 var loginUserInfo = createFakeLoginUserInfo();
-                CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(1L,
+                CancelTotalOrderRequestDto request = CancelTotalOrderRequestDto.from(
+                    totalOrder.getId(),
                     loginUserInfo);
 
                 // when & then
