@@ -195,7 +195,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public CancelTotalOrderResponseDto cancelTotalOrder(CancelTotalOrderRequestDto request) {
-        TotalOrder totalOrder = totalOrderRepository.findTotalOrderForCancel(request.orderId());
+        TotalOrder totalOrder = totalOrderRepository.findTotalOrderForCancel(
+            request.totalOrderId());
 
         if (!totalOrder.getOrderer().getUserId().equals(request.loginUserInfo().userId())) {
             throw new OrderNotOrdererException();
