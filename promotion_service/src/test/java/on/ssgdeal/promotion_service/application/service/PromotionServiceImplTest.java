@@ -1,11 +1,10 @@
 package on.ssgdeal.promotion_service.application.service;
 
 import on.ssgdeal.common.application.dto.PageDto;
-import on.ssgdeal.promotion_service.application.service.dto.GetFinishedPromotionDetailResponseDto;
-import on.ssgdeal.promotion_service.application.service.dto.GetInProgressPromotionDetailResponseDto;
-import on.ssgdeal.promotion_service.application.service.dto.GetPromotionsRequestDto;
-import on.ssgdeal.promotion_service.application.service.dto.GetPromotionsResponseDto;
+import on.ssgdeal.promotion_service.application.service.dto.*;
+import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
@@ -132,4 +131,40 @@ public class PromotionServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("Describe: getCompanies 메서드는")
+    class getCompaniesTest {
+
+        @Nested
+        @DisplayName("Context: 유효한 요청으로 업체 리스트를 조회할 때")
+        class getCompaniesSuccessTest {
+
+            @Test
+            @DisplayName("It: 조건에 맞는 업체 리스트를 반환하다.")
+            void getCompaniesTest() throws Exception {
+
+                //given
+                Pageable pageable = PageRequest.of(0, 10);
+                GetCompaniesConditionDto conditionDto = GetCompaniesConditionDto.builder()
+                        .keyword("스")
+                        .pageable(pageable)
+                        .build();
+
+                GetCompaniesRequestDto requestDto = GetCompaniesRequestDto.builder()
+                        .keyword("스")
+                        .pageable(pageable)
+                        .build();
+
+                //when
+                PageDto<GetCompaniesResponseDto> response = promotionService.getCompanies(requestDto);
+                Page<Company> result = promotionRepository.findCompanies(conditionDto);
+                Page<GetCompaniesResponseDto> expectedResponse = result.map(GetCompaniesResponseDto::from);
+
+                //then
+                assertThat(response).isNotNull();
+                assertThat(response.content().get(0).companyName()).contains("스");
+                assertThat(expectedResponse.get().count()).isEqualTo(response.content().size());
+            }
+        }
+    }
 }
