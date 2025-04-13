@@ -41,4 +41,4 @@ springdoc:
     tags-sorter: alpha
   api-docs:
     enabled: true
-    path: /api-docs-delivery-service
+    path: /api-docs-order-service
