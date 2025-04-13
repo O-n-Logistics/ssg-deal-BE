@@ -1,6 +1,14 @@
 package on.ssgdeal.cart_service.presentation.external;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import on.ssgdeal.cart_service.application.service.CartService;
+import on.ssgdeal.cart_service.application.service.dto.GetProductsByIdsResponseDto;
+import on.ssgdeal.common.auth.passport.Passport;
+import on.ssgdeal.common.auth.passport.PassportUtil;
+import on.ssgdeal.common.presentation.dto.CommonResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,4 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CartController {
 
+    private final CartService cartService;
+
+    private final PassportUtil passportUtil;
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<GetProductsByIdsResponseDto>> getCarts(
+        HttpServletRequest servletRequest
+    ) {
+        Passport passport = passportUtil.getPassportBy(servletRequest);
+        GetProductsByIdsResponseDto requestDto = cartService.getCarts(passport.getUserId());
+        return ResponseEntity.ok(CommonResponse.success(requestDto));
+    }
 }
