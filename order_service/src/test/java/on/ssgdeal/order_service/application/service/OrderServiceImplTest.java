@@ -87,6 +87,12 @@ class OrderServiceImplTest {
         return LoginUserInfoDto.from(passport);
     }
 
+    private LoginUserInfoDto createFakeValidLoginUserInfo() {
+        Passport passport = new Passport(1000L, "제발 돼라", AuthRole.CONSUMER, "한나윤",
+            "order@naver.com");
+        return LoginUserInfoDto.from(passport);
+    }
+
     private CreateOrderRequestDto createFakeCreateOrderRequestDto() {
         var orderedProduct1 = new CreateOrderRequestDto.CreateSubOrderRequestDto.OrderedProductDto(
             1L, 101L, 2L // productId, optionId, quantity
@@ -379,6 +385,27 @@ class OrderServiceImplTest {
                 assertThat(result.content().get(0).totalOrderId()).isEqualTo(1L);
                 assertThat(result.totalElements()).isEqualTo(3);
             }
+
+            @Nested
+            @DisplayName("Context: 유저가 주문 목록이 없다면")
+            class failTest {
+
+                @Test
+                @DisplayName("It: 빈 리스트를 반환한다.")
+                void getDetailFailTest() throws Exception {
+
+                    //given
+                    var loginUserInfo = createFakeValidLoginUserInfo();
+                    Pageable pageable = PageRequest.of(0, 10);
+
+                    // when
+                    PageDto<GetTotalOrdersResponseDto> result = orderService.getTotalOrders(
+                        loginUserInfo, pageable);
+
+                    // then
+                    assertThat(result.content()).hasSize(0);
+                }
+            }
         }
     }
 
@@ -408,5 +435,25 @@ class OrderServiceImplTest {
                 assertThat(result.destination()).isEqualTo("서울시 광진구");
             }
         }
+
+        @Nested
+        @DisplayName("Context: 들어온 유저와 일치하지 않으면")
+        class failTest {
+
+            @Test
+            @DisplayName("It: 에러를 반환한다.")
+            void getDetailFailTest() throws Exception {
+
+                //given
+                var loginUserInfo = createFakeValidLoginUserInfo();
+
+                //when & then
+                assertThatThrownBy(
+                    () -> orderService.getTotalOrderDetail(1L,
+                        loginUserInfo))
+                    .isInstanceOf(OrderNotFoundTotalOrderException.class);
+            }
+        }
     }
+
 }
