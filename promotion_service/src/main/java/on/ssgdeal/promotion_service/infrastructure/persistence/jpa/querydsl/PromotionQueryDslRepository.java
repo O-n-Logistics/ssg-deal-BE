@@ -1,5 +1,6 @@
 package on.ssgdeal.promotion_service.infrastructure.persistence.jpa.querydsl;
 
+import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
@@ -10,5 +11,5 @@ import java.util.Optional;
 
 public interface PromotionQueryDslRepository {
     Optional<GetInProgressPromotionDetailDto> findPromotionWithProductsById(Long promotionId, Pageable pageable);
-    Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto);
+    Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto);
 }

@@ -21,13 +21,12 @@ import java.time.LocalDate;
 public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
-    private final PromotionApplicationMapper promotionApplicationMapper;
 
     @Override
     public PageDto<GetPromotionsResponseDto> getPromotions(GetPromotionsRequestDto requestDto) {
         GetPromotionsConditionDto conditionDto = GetPromotionsRequestDto.toDto(requestDto);
-        Page<GetPromotionsDto> result = promotionRepository.findPromotions(conditionDto);
-        Page<GetPromotionsResponseDto> response = result.map(promotionApplicationMapper::toResponseDto);
+        Page<Promotion> result = promotionRepository.findPromotions(conditionDto);
+        Page<GetPromotionsResponseDto> response = result.map(GetPromotionsResponseDto::from);
         return PageDto.from(response);
     }
 

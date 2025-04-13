@@ -14,6 +14,6 @@ public interface PromotionRepository {
 
     Optional<Promotion> findById(Long id);
     Optional<GetInProgressPromotionDetailDto> findPromotionWithProductsById(Long id, Pageable pageable);
+    Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto);
 
-    Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto);
 }

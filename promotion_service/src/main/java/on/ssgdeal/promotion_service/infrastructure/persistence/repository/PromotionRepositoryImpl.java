@@ -32,7 +32,11 @@ public class PromotionRepositoryImpl implements PromotionRepository {
         return promotionQueryDslRepository.findPromotionWithProductsById(promotionId, pageable);
     }
     @Override
-    public Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto) {
+    public Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto) {
         return promotionQueryDslRepository.findPromotions(conditionDto);
     }
+//    @Override
+//    public Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto) {
+//        return promotionQueryDslRepository.findPromotions(conditionDto);
+//    }
 }

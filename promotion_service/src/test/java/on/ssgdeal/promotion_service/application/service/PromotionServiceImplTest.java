@@ -1,10 +1,12 @@
 package on.ssgdeal.promotion_service.application.service;
 
 import on.ssgdeal.common.application.dto.PageDto;
-import on.ssgdeal.promotion_service.application.service.dto.*;
+import on.ssgdeal.promotion_service.application.service.dto.GetFinishedPromotionDetailResponseDto;
+import on.ssgdeal.promotion_service.application.service.dto.GetInProgressPromotionDetailResponseDto;
+import on.ssgdeal.promotion_service.application.service.dto.GetPromotionsRequestDto;
+import on.ssgdeal.promotion_service.application.service.dto.GetPromotionsResponseDto;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
-import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import org.hibernate.AssertionFailure;
@@ -32,9 +34,6 @@ public class PromotionServiceImplTest {
 
     @Autowired
     private PromotionRepository promotionRepository;
-
-    @Autowired
-    private PromotionApplicationMapper promotionApplicationMapper;
 
     @Nested
     @DisplayName("Describe: getFinishedPromotionDetail 메서드는")
@@ -122,11 +121,12 @@ public class PromotionServiceImplTest {
 
                 //when
                 PageDto<GetPromotionsResponseDto> response = promotionService.getPromotions(requestDto);
-                Page<GetPromotionsDto> result = promotionRepository.findPromotions(conditionDto);
-                Page<GetPromotionsResponseDto> expectedResponse = result.map(promotionApplicationMapper::toResponseDto);
+                Page<Promotion> result = promotionRepository.findPromotions(conditionDto);
+                Page<GetPromotionsResponseDto> expectedResponse = result.map(GetPromotionsResponseDto::from);
 
                 //then
                 assertThat(response).isNotNull();
+                assertThat(result.getContent().get(0).getStatus()).isEqualTo(PromotionStatus.FINISHED);
                 assertThat(expectedResponse.get().count()).isEqualTo(response.content().size());
             }
         }

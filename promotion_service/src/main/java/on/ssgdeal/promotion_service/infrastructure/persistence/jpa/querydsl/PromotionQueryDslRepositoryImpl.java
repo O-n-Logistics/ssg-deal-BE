@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
@@ -86,15 +87,9 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
     }
 
     @Override
-    public Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto) {
-        List<GetPromotionsDto> promotions = queryFactory
-                .select(Projections.constructor(GetPromotionsDto.class,
-                        promotion.id.as("promotionId"),
-                        promotion.title.as("promotionTitle"),
-                        promotion.previewUrl.value.as("promotionPreviewUrl"),
-                        promotion.startPromotionDate.as("startPromotionDate"),
-                        promotion.endPromotionDate.as("endPromotionDate")
-                ))
+    public Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto) {
+        List<Promotion> promotions = queryFactory
+                .select(promotion)
                 .from(promotion)
                 .where(
                         containsKeyword(conditionDto.keyword()),
