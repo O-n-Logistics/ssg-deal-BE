@@ -115,4 +115,8 @@ public class TotalOrder extends BaseEntity {
         TotalOrderPayment payment = TotalOrderPayment.updateCancelOrder(this, dto);
         this.totalOrderPayments.add(payment);
     }
+
+    public void updateCancelStatus() {
+        this.status = TotalOrderStatus.CANCELED;
+    }
 }

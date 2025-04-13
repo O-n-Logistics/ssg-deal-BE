@@ -15,13 +15,6 @@ public class OrderException extends CustomException {
         }
     }
 
-    public static class OrderMinPriceException extends OrderException {
-
-        public OrderMinPriceException() {
-            super(OrderExceptionCode.ORDER_MIN_PRICE);
-        }
-    }
-
     public static class OrderNullTotalOrderNumber extends OrderException {
 
         public OrderNullTotalOrderNumber() {

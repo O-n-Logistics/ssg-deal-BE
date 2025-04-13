@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import on.ssgdeal.order_service.domain.vo.TotalOrderNumber;
 import on.ssgdeal.order_service.domain.vo.TotalPrice;
 import on.ssgdeal.order_service.exception.OrderException.OrderFormatTotalOrderNumberException;
-import on.ssgdeal.order_service.exception.OrderException.OrderMinPriceException;
 import on.ssgdeal.order_service.exception.OrderException.OrderNullPriceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,17 +20,6 @@ class TotalOrderTest {
         //when & then
         assertThatThrownBy(() -> new TotalPrice(price))
             .isInstanceOf(OrderNullPriceException.class);
-    }
-
-    @Test
-    @DisplayName("최저 가격 검증")
-    void insertValidMinPrice() throws Exception {
-        //given
-        Long price = 0L;
-
-        //when & then
-        assertThatThrownBy(() -> new TotalPrice(price))
-            .isInstanceOf(OrderMinPriceException.class);
     }
 
     @Test
