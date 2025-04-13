@@ -3,10 +3,11 @@ package on.ssgdeal.promotion_service.application.service;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.promotion_service.application.service.dto.*;
+import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
-import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import on.ssgdeal.promotion_service.exception.PromotionException;
@@ -21,6 +22,14 @@ import java.time.LocalDate;
 public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
+
+    @Override
+    public PageDto<GetCompaniesResponseDto> getCompanies(GetCompaniesRequestDto requestDto) {
+        GetCompaniesConditionDto conditionDto = GetCompaniesRequestDto.toDto(requestDto);
+        Page<Company> result = promotionRepository.findCompanies(conditionDto);
+        Page<GetCompaniesResponseDto> response = result.map(GetCompaniesResponseDto::from);
+        return PageDto.from(response);
+    }
 
     @Override
     public PageDto<GetPromotionsResponseDto> getPromotions(GetPromotionsRequestDto requestDto) {

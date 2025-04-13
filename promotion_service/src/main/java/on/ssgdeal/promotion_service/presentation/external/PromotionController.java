@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.promotion_service.application.service.PromotionService;
+import on.ssgdeal.promotion_service.application.service.dto.GetCompaniesResponseDto;
 import on.ssgdeal.promotion_service.application.service.dto.GetFinishedPromotionDetailResponseDto;
 import on.ssgdeal.promotion_service.application.service.dto.GetInProgressPromotionDetailResponseDto;
 import on.ssgdeal.promotion_service.application.service.dto.GetPromotionsResponseDto;
+import on.ssgdeal.promotion_service.presentation.dto.GetCompaniesRequest;
 import on.ssgdeal.promotion_service.presentation.dto.GetPromotionsRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +52,15 @@ public class PromotionController {
         return ResponseEntity.ok().body(CommonResponse.success(responseDto));
     }
 
-
+    @GetMapping("/companies/search")
+    public ResponseEntity<CommonResponse<PageDto<GetCompaniesResponseDto>>> getCompanies(
+            @ModelAttribute GetCompaniesRequest request,
+            Pageable pageable
+    ) {
+        log.info("업체 리스트 조회 요청 : {} ", request.toString());
+        final var responseDto = promotionService.getCompanies(GetCompaniesRequest.toDto(request, pageable));
+        return ResponseEntity.ok().body(CommonResponse.success(responseDto));
+    }
 }
 
 

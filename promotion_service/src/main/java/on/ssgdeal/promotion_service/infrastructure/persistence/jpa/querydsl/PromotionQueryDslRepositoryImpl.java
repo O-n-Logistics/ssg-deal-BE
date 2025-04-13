@@ -3,13 +3,15 @@ package on.ssgdeal.promotion_service.infrastructure.persistence.jpa.querydsl;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
-import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
@@ -92,7 +94,7 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
                 .select(promotion)
                 .from(promotion)
                 .where(
-                        containsKeyword(conditionDto.keyword()),
+                        containsKeyword(conditionDto.keyword(), promotion.title),
                         filterStatus(conditionDto.filter())
                 )
                 .offset(conditionDto.pageable().getOffset())
@@ -102,8 +104,23 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
         return new PageImpl<>(promotions, conditionDto.pageable(), promotions.size());
     }
 
-    private BooleanExpression containsKeyword(String keyword) {
-        return keyword != null ? promotion.title.containsIgnoreCase(keyword) : null;
+    @Override
+    public Page<Company> findCompanies(GetCompaniesConditionDto conditionDto) {
+        List<Company> companies = queryFactory
+                .select(company)
+                .from(company)
+                .where(
+                        containsKeyword(conditionDto.keyword(), company.name.value)
+                )
+                .offset(conditionDto.pageable().getOffset())
+                .limit(conditionDto.pageable().getPageSize())
+                .fetch();
+
+        return new PageImpl<>(companies, conditionDto.pageable(), companies.size());
+    }
+
+    private BooleanExpression containsKeyword(String keyword, StringPath target) {
+        return keyword != null ? target.containsIgnoreCase(keyword) : null;
     }
 
     private BooleanExpression filterStatus(PromotionStatus filter) {

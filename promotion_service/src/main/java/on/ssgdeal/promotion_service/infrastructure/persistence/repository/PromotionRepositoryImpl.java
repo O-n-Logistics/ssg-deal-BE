@@ -1,11 +1,11 @@
 package on.ssgdeal.promotion_service.infrastructure.persistence.repository;
 
 import lombok.RequiredArgsConstructor;
-import on.ssgdeal.promotion_service.application.service.dto.GetPromotionsResponseDto;
+import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
-import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsDto;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import on.ssgdeal.promotion_service.infrastructure.persistence.jpa.PromotionJpaRepository;
 import on.ssgdeal.promotion_service.infrastructure.persistence.jpa.querydsl.PromotionQueryDslRepository;
@@ -35,8 +35,8 @@ public class PromotionRepositoryImpl implements PromotionRepository {
     public Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto) {
         return promotionQueryDslRepository.findPromotions(conditionDto);
     }
-//    @Override
-//    public Page<GetPromotionsDto> findPromotions(GetPromotionsConditionDto conditionDto) {
-//        return promotionQueryDslRepository.findPromotions(conditionDto);
-//    }
+    @Override
+    public Page<Company> findCompanies(GetCompaniesConditionDto conditionDto) {
+        return promotionQueryDslRepository.findCompanies(conditionDto);
+    }
 }
