@@ -12,6 +12,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +73,7 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
             .set(totalOrderPayment.paymentId, requestDto.paymentId())
             .set(totalOrderPayment.paymentType, requestDto.paymentType())
             .set(totalOrderPayment.paymentMethod, requestDto.paymentMethod())
-            .set(totalOrderPayment.paymentDate, requestDto.paymentDate())
+            .set(totalOrderPayment.paymentDate, Timestamp.valueOf(requestDto.paymentDate()))
             .set(totalOrderPayment.paymentAmount, requestDto.paymentAmount())
             .set(totalOrderPayment.paymentKey, requestDto.paymentKey())
             .set(totalOrderPayment.paymentStatus, PaymentStatus.COMPLETED)

@@ -1,6 +1,6 @@
 package on.ssgdeal.order_service.domain.entity.dtos;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import on.ssgdeal.order_service.domain.enums.PaymentMethod;
 import on.ssgdeal.order_service.domain.enums.PaymentType;
 
@@ -9,7 +9,7 @@ public record UpdateTotalOrderSuccessDto(Long totalOrderId,
                                          PaymentType paymentType,
                                          PaymentMethod paymentMethod,
                                          Long paymentAmount,
-                                         Timestamp paymentDate,
+                                         LocalDateTime paymentDate,
                                          String paymentKey) {
 
 }
