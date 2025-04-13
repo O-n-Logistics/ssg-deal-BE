@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import on.ssgdeal.common.jpa.BaseEntity;
+import on.ssgdeal.order_service.domain.entity.dtos.UpdateCancelOrderSuccessDto;
 import on.ssgdeal.order_service.domain.enums.PaymentMethod;
 import on.ssgdeal.order_service.domain.enums.PaymentStatus;
 import on.ssgdeal.order_service.domain.enums.PaymentType;
@@ -59,6 +60,20 @@ public class TotalOrderPayment extends BaseEntity {
         return TotalOrderPayment.builder()
             .totalOrder(totalOrder)
             .paymentStatus(PaymentStatus.PENDING)
+            .build();
+    }
+
+    public static TotalOrderPayment updateCancelOrder(TotalOrder totalOrder,
+        UpdateCancelOrderSuccessDto dto) {
+        return TotalOrderPayment.builder()
+            .totalOrder(totalOrder)
+            .paymentId(dto.paymentId())
+            .paymentType(dto.paymentType())
+            .paymentMethod(dto.paymentMethod())
+            .paymentAmount(dto.paymentAmount())
+            .paymentKey(dto.paymentKey())
+            .paymentDate(Timestamp.valueOf(dto.paymentDate()))
+            .paymentStatus(PaymentStatus.COMPLETED)
             .build();
     }
 }

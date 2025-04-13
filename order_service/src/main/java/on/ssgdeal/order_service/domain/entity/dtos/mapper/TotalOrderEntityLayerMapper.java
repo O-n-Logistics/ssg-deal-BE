@@ -1,8 +1,10 @@
 package on.ssgdeal.order_service.domain.entity.dtos.mapper;
 
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
+import on.ssgdeal.order_service.application.service.dto.UpdateCancelOrderSuccessRequestDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
+import on.ssgdeal.order_service.domain.entity.dtos.UpdateCancelOrderSuccessDto;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
 import org.mapstruct.Mapper;
 
@@ -14,5 +16,8 @@ public interface TotalOrderEntityLayerMapper {
 
     GetTotalOrdersUserInfoDto toGetTotalOrdersUserInfoDto(
         LoginUserInfoDto loginUserInfoDto);
+
+    UpdateCancelOrderSuccessDto toUpdateCancelOrderSuccessDto(
+        UpdateCancelOrderSuccessRequestDto requestDto);
 
 }

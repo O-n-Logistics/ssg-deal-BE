@@ -9,6 +9,7 @@ import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
 import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
+import on.ssgdeal.order_service.application.service.dto.UpdateCancelOrderSuccessRequestDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderFailRequestDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.presentation.external.dto.CreateOrderResponse;
@@ -34,4 +35,6 @@ public interface OrderService {
     void createTotalOrderPaymentFail(UpdateTotalOrderFailRequestDto requestDto);
 
     CancelOrderResponseDto cancelOrder(CancelOrderRequestDto request);
+
+    void cancelOrderPaymentSuccess(UpdateCancelOrderSuccessRequestDto requestDto);
 }

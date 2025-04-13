@@ -9,8 +9,10 @@ import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.order_service.application.service.OrderService;
 import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
+import on.ssgdeal.order_service.application.service.dto.UpdateCancelOrderSuccessRequestDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderFailRequestDto;
 import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
+import on.ssgdeal.order_service.presentation.internal.dto.UpdateCancelOrderSuccessRequest;
 import on.ssgdeal.order_service.presentation.internal.dto.UpdateTotalOrderFailRequest;
 import on.ssgdeal.order_service.presentation.internal.dto.UpdateTotalOrderSuccessRequest;
 import on.ssgdeal.order_service.presentation.internal.dto.ValidTotalOrderResponse;
@@ -56,6 +58,15 @@ public class OrderInternalController {
     ) {
         UpdateTotalOrderFailRequestDto requestDto = request.toDto();
         orderService.createTotalOrderPaymentFail(requestDto);
+        return ResponseEntity.ok(CommonResponse.success());
+    }
+
+    @PostMapping("/payments/cancel/success")
+    public ResponseEntity<CommonResponse<Void>> cancelOrderPaymentSuccess(
+        @Valid @RequestBody UpdateCancelOrderSuccessRequest request
+    ) {
+        UpdateCancelOrderSuccessRequestDto requestDto = request.toDto();
+        orderService.cancelOrderPaymentSuccess(requestDto);
         return ResponseEntity.ok(CommonResponse.success());
     }
 }
