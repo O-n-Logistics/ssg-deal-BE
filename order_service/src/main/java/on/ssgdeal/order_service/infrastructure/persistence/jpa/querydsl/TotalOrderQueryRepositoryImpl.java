@@ -169,10 +169,10 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         List<TotalOrder> results = queryFactory
             .selectDistinct(totalOrder)
             .from(totalOrder)
-            .join(totalOrder.totalOrderPayments, totalOrderPayment).fetchJoin()
+            .join(totalOrder.totalOrderPayments, totalOrderPayment)
             .join(totalOrder.orders, order).fetchJoin()
             .join(totalOrder.orderer, orderer).fetchJoin()
-            .join(order.orderProducts, orderProduct).fetchJoin()
+            .join(order.orderProducts, orderProduct)
             .where(totalOrderDetailFilter)
             .fetch();
         return Optional.ofNullable(results.get(0));

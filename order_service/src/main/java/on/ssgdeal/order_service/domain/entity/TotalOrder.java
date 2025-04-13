@@ -25,6 +25,7 @@ import on.ssgdeal.order_service.domain.entity.dtos.UpdateCancelOrderSuccessDto;
 import on.ssgdeal.order_service.domain.enums.TotalOrderStatus;
 import on.ssgdeal.order_service.domain.vo.TotalOrderNumber;
 import on.ssgdeal.order_service.domain.vo.TotalPrice;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 
 @Getter
@@ -54,6 +55,7 @@ public class TotalOrder extends BaseEntity {
     private Orderer orderer;
 
     @Builder.Default
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "totalOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<TotalOrderPayment> totalOrderPayments = new ArrayList<>();
 
