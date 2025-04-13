@@ -127,7 +127,7 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         List<TotalOrder> results = queryFactory
             .selectDistinct(totalOrder)
             .join(totalOrder.orders, order).fetchJoin()
-            .join(totalOrder.totalOrderPayments, totalOrderPayment).fetchJoin()
+            .join(totalOrder.totalOrderPayments, totalOrderPayment)
             .where(
                 totalOrder.id.eq(totalOrderId),
                 order.status.ne(OrderStatus.CANCELED)
@@ -146,7 +146,7 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         List<TotalOrder> results = queryFactory
             .selectDistinct(totalOrder)
             .join(totalOrder.orders, order).fetchJoin()
-            .join(totalOrder.totalOrderPayments, totalOrderPayment).fetchJoin()
+            .join(totalOrder.totalOrderPayments, totalOrderPayment)
             .where(
                 totalOrder.id.eq(totalOrderId),
                 totalOrder.status.eq(TotalOrderStatus.PENDING)
@@ -165,7 +165,7 @@ public class TotalOrderQueryRepositoryImpl implements TotalOrderQueryRepository 
         List<TotalOrder> results = queryFactory
             .selectDistinct(totalOrder)
             .join(totalOrder.orders, order).on(order.id.eq(orderId)).fetchJoin()
-            .join(order.orderProducts, orderProduct).fetchJoin()
+            .join(order.orderProducts, orderProduct)
             .where(
                 totalOrder.id.eq(totalOrderId)
             )
