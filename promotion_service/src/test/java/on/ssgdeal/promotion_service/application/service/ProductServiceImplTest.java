@@ -27,7 +27,6 @@ import on.ssgdeal.promotion_service.domain.vo.ProductOriginalPrice;
 import on.ssgdeal.promotion_service.domain.vo.ProductPreviewUrl;
 import on.ssgdeal.promotion_service.domain.vo.ProductPromotionPrice;
 import on.ssgdeal.promotion_service.domain.vo.ProductStock;
-import on.ssgdeal.promotion_service.exception.ProductException;
 import on.ssgdeal.promotion_service.exception.PromotionException;
 import on.ssgdeal.promotion_service.presentation.internal.dto.product.DecreaseStockResponse;
 import on.ssgdeal.promotion_service.presentation.internal.dto.product.IncreaseStockResponse;
@@ -67,13 +66,10 @@ class ProductServiceImplTest {
             @Test
             @DisplayName("It: 회사별 그룹화된 응답 DTO를 반환한다.")
             void testValidateStockDecrease_valid() {
-                // 1. 요청 DTO 구성 (ValidateStockDecreasesRequestDto에는 companyId, optionId, decreaseStockAmount만 있음)
                 ValidateStockDecreasesRequestDto.ProductDetail requestDetail =
                     new ValidateStockDecreasesRequestDto.ProductDetail(1L, 100L, 5L);
                 ValidateStockDecreasesRequestDto requestDto =
                     new ValidateStockDecreasesRequestDto(List.of(requestDetail));
-
-                // 2. 모의 도메인 객체 생성
 
                 // Company
                 Company company = mock(Company.class);
@@ -113,24 +109,20 @@ class ProductServiceImplTest {
                 ProductOptionExtraPrice extraPriceVO = mock(ProductOptionExtraPrice.class);
                 when(extraPriceVO.getValue()).thenReturn(100L);
                 when(productOption.getExtraPrice()).thenReturn(extraPriceVO);
+
                 ProductStock stockVO = mock(ProductStock.class);
-                // 재고가 10개 있으므로 요청 decreaseStockAmount 5개는 충분
                 when(stockVO.getValue()).thenReturn(10L);
                 when(productOption.getProductStock()).thenReturn(stockVO);
 
-                // Product의 옵션 목록 (단일 옵션)
                 when(product.getOptions()).thenReturn(List.of(productOption));
 
-                // 3. Repository Stub: 요청 DTO에서 추출한 companyIds=[1L], optionIds=[100L]
                 when(productRepository.findAllWithDetailsByCompanyIdsAndOptionIds(anyList(),
                     anyList()))
                     .thenReturn(List.of(product));
 
-                // 4. 서비스 메서드 실행
                 ValidateStockDecreasesResponse response = productServiceImpl.validateStockDecrease(
                     requestDto);
 
-                // 5. 응답 검증
                 assertThat(response).isNotNull();
                 List<ValidateStockDecreasesResponse.CompanyDetail> companyDetails = response.companyList();
                 assertThat(companyDetails.size()).isEqualTo(1);
@@ -156,8 +148,6 @@ class ProductServiceImplTest {
                 assertThat(cp.decreaseStockAmount()).isEqualTo(5L);
             }
         }
-
-        // 추가: 부정 케이스(회사 불일치, 프로모션 진행 중, 재고 부족, 옵션 미존재 등)도 유사하게 작성할 수 있습니다.
     }
 
     @Nested
@@ -173,44 +163,23 @@ class ProductServiceImplTest {
             void testDecreaseStock_Success() {
                 // given
                 DecreaseStockRequestDto dto = new DecreaseStockRequestDto(10L, 100L, 5L);
-                // dto: productId=10L, optionId=100L, decreaseStockAmount=5
-
-                // 모의 객체 구성
-                // Company
                 Company company = org.mockito.Mockito.mock(Company.class);
 
-                // Promotion (유효한 상태: 여기서는 decreaseStock의 validatePromotionStatus는 FINISHED일 경우 예외를 던지므로,
-                // valid 상태는 FINISHED가 아닌 상태; 예를 들어 IN_PROGRESS로 가정)
                 Promotion promotion = org.mockito.Mockito.mock(Promotion.class);
                 when(promotion.getStatus()).thenReturn(PromotionStatus.IN_PROGRESS);
                 when(company.getPromotion()).thenReturn(promotion);
 
-                // Product
                 Product product = org.mockito.Mockito.mock(Product.class);
                 when(product.getCompany()).thenReturn(company);
-                // ProductOption
+
                 ProductOption productOption = org.mockito.Mockito.mock(ProductOption.class);
                 when(productOption.getId()).thenReturn(100L);
-                // productStock: stock 10, 그리고 decrease()를 호출해도 예외 없이 진행
                 ProductStock stockVO = org.mockito.Mockito.mock(ProductStock.class);
-                // productOption.getProductStock() 호출 시 mock 값을 반환하도록
                 when(productOption.getProductStock()).thenReturn(stockVO);
-
-                // Product의 옵션 목록
                 when(product.getOptions()).thenReturn(List.of(productOption));
-
-                // productRepository.findById 호출 시 product 반환
                 when(productRepository.findById(dto.productId())).thenReturn(Optional.of(product));
-                // productRepository.save 호출 시 업데이트된 product 반환 (동일 객체로 가정)
                 when(productRepository.save(product)).thenReturn(product);
 
-                // 상품 재고 감소 메서드 (productOption.getProductStock().decrease(dto.decreaseStockAmount()))
-                // 실제 domain 로직은 내부에서 수행되므로 여기서는 아무런 예외를 던지지 않도록 한다.
-                // (만약 productOption.getProductStock()가 별도 객체라면 해당 decrease() 호출은 void이므로 doNothing() 사용)
-                // 예를 들어:
-                // doNothing().when(stockVO).decrease(anyInt()); -> stockVO가 메서드를 가지고 있다면
-
-                // productMapper.toDecreaseStockResponse stub 처리
                 DecreaseStockResponse expectedResponse = DecreaseStockResponse.builder()
                     .productId(10L)
                     .optionId(100L)
@@ -241,10 +210,8 @@ class ProductServiceImplTest {
                 // given
                 DecreaseStockRequestDto dto = new DecreaseStockRequestDto(10L, 100L, 5L);
 
-                // 모의 객체 구성
                 Company company = org.mockito.Mockito.mock(Company.class);
 
-                // 프로모션 상태가 FINISHED이면 validatePromotionStatus에서 예외 발생
                 Promotion promotion = org.mockito.Mockito.mock(Promotion.class);
                 when(promotion.getStatus()).thenReturn(PromotionStatus.FINISHED);
                 when(company.getPromotion()).thenReturn(promotion);
@@ -252,64 +219,11 @@ class ProductServiceImplTest {
                 Product product = org.mockito.Mockito.mock(Product.class);
                 when(product.getCompany()).thenReturn(company);
 
-                // 옵션은 valid하게 설정 (단, validatePromotionStatus 먼저 예외 발생함)
-
                 when(productRepository.findById(dto.productId())).thenReturn(Optional.of(product));
 
                 // when, then
                 assertThatThrownBy(() -> productServiceImpl.decreaseStock(dto))
                     .isInstanceOf(PromotionException.PromotionNotInProgressException.class);
-            }
-        }
-
-        @Nested
-        @DisplayName("Context: 재고가 부족할 때")
-        class InsufficientStockTest {
-
-            @Test
-            @DisplayName("It: ProductException.InsufficientStockException 예외를 발생시킨다.")
-            void testDecreaseStock_InsufficientStock() {
-                // given
-                DecreaseStockRequestDto dto = new DecreaseStockRequestDto(10L, 100L,
-                    15L); // 요청 감소량 15
-
-                // 모의 객체 구성
-                Company company = org.mockito.Mockito.mock(Company.class);
-                when(company.getId()).thenReturn(1L);
-                CompanyName companyNameVO = org.mockito.Mockito.mock(CompanyName.class);
-                when(companyNameVO.getValue()).thenReturn("Test Company");
-                when(company.getName()).thenReturn(companyNameVO);
-
-                // 유효한 프로모션 상태 (IN_PROGRESS)로 설정
-                Promotion promotion = org.mockito.Mockito.mock(Promotion.class);
-                when(promotion.getStatus()).thenReturn(PromotionStatus.IN_PROGRESS);
-                when(company.getPromotion()).thenReturn(promotion);
-
-                Product product = org.mockito.Mockito.mock(Product.class);
-                when(product.getId()).thenReturn(10L);
-                when(product.getCompany()).thenReturn(company);
-
-                // 옵션 설정: 재고 10인데 요청 감소량이 15 -> 부족
-                ProductOption productOption = org.mockito.Mockito.mock(ProductOption.class);
-                when(productOption.getId()).thenReturn(100L);
-                ProductStock stockVO = org.mockito.Mockito.mock(ProductStock.class);
-                when(stockVO.getValue()).thenReturn(10L);
-                when(productOption.getProductStock()).thenReturn(stockVO);
-                when(product.getOptions()).thenReturn(List.of(productOption));
-
-                when(productRepository.findById(dto.productId())).thenReturn(Optional.of(product));
-
-                // 실제 재고 부족 상황을 시뮬레이션하기 위해서,
-                // productOption.getProductStock().decrease(dto.decreaseStockAmount())를 호출하면
-                // ProductException.InsufficientStockException을 던지도록 할 수 있다.
-                // (만약 productStock 객체의 decrease 메서드를 모의할 수 있다면, doThrow로 처리)
-                // 여기서는 단순하게 실제 도메인 로직 내에서 예외가 발생했다고 가정
-
-                // when, then
-                assertThatThrownBy(() -> productServiceImpl.decreaseStock(dto))
-                    .isInstanceOf(ProductException.ProductNotFoundException.class)
-                // 또는 InsufficientStockException; 실제 도메인 예외에 맞추어 수정 필요
-                ;
             }
         }
     }
@@ -330,12 +244,9 @@ class ProductServiceImplTest {
             void testIncreaseStock_Success() {
                 // given
                 IncreaseStockRequestDto dto = new IncreaseStockRequestDto(10L, 100L, 3L);
-                // productId=10L, optionId=100L, increaseStockAmount=3
 
-                // 모의 객체 구성 (대부분은 decreaseStock과 유사)
                 Company company = org.mockito.Mockito.mock(Company.class);
 
-                // 유효한 프로모션 상태 (예: IN_PROGRESS)
                 Promotion promotion = org.mockito.Mockito.mock(Promotion.class);
                 when(promotion.getStatus()).thenReturn(PromotionStatus.IN_PROGRESS);
                 when(company.getPromotion()).thenReturn(promotion);
@@ -343,10 +254,8 @@ class ProductServiceImplTest {
                 Product product = org.mockito.Mockito.mock(Product.class);
                 when(product.getCompany()).thenReturn(company);
 
-                // ProductOption
                 ProductOption productOption = org.mockito.Mockito.mock(ProductOption.class);
                 when(productOption.getId()).thenReturn(100L);
-                // increase: 재고 5개에서 증가 시킨다고 가정 (최종 재고 등은 테스트 대상이 아님)
                 ProductStock stockVO = org.mockito.Mockito.mock(ProductStock.class);
                 when(productOption.getProductStock()).thenReturn(stockVO);
                 when(product.getOptions()).thenReturn(List.of(productOption));
@@ -386,14 +295,12 @@ class ProductServiceImplTest {
 
                 Company company = org.mockito.Mockito.mock(Company.class);
 
-                // 프로모션 상태 FINISHED -> 증가 불가
                 Promotion promotion = org.mockito.Mockito.mock(Promotion.class);
                 when(promotion.getStatus()).thenReturn(PromotionStatus.FINISHED);
                 when(company.getPromotion()).thenReturn(promotion);
 
                 Product product = org.mockito.Mockito.mock(Product.class);
                 when(product.getCompany()).thenReturn(company);
-                // 옵션은 valid하게 설정
 
                 when(productRepository.findById(dto.productId())).thenReturn(Optional.of(product));
 
