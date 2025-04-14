@@ -1,12 +1,15 @@
 package on.ssgdeal.promotion_service.infrastructure.persistence.jpa.querydsl;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.common.pageable.enums.PageSortBy;
 import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
@@ -16,6 +19,7 @@ import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,6 +94,7 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
 
     @Override
     public Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto) {
+        OrderSpecifier<?>[] orderSpecifiers = getOrderPromotionSpecifiers(conditionDto.pageable());
         List<Promotion> promotions = queryFactory
                 .select(promotion)
                 .from(promotion)
@@ -97,6 +102,7 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
                         containsKeyword(conditionDto.keyword(), promotion.title),
                         filterStatus(conditionDto.filter())
                 )
+                .orderBy(orderSpecifiers)
                 .offset(conditionDto.pageable().getOffset())
                 .limit(conditionDto.pageable().getPageSize())
                 .fetch();
@@ -117,12 +123,15 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
 
     @Override
     public Page<Company> findCompanies(GetCompaniesConditionDto conditionDto) {
+        OrderSpecifier<?>[] orderSpecifiers = getOrderCompanySpecifiers(conditionDto.pageable());
+
         List<Company> companies = queryFactory
                 .select(company)
                 .from(company)
                 .where(
                         containsKeyword(conditionDto.keyword(), company.name.value)
                 )
+                .orderBy(orderSpecifiers)
                 .offset(conditionDto.pageable().getOffset())
                 .limit(conditionDto.pageable().getPageSize())
                 .fetch();
@@ -146,6 +155,36 @@ public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslReposit
 
     private BooleanExpression filterStatus(PromotionStatus filter) {
         return filter != null ? promotion.status.eq(filter) : null;
+    }
+
+    private OrderSpecifier<?>[] getOrderCompanySpecifiers(Pageable pageable) {
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        Sort sort = pageable.getSort();
+        sort.forEach(order -> {
+            String sortBy = order.getProperty();
+            Order direction = order.getDirection() == Sort.Direction.ASC ? Order.ASC : Order.DESC;
+            switch (PageSortBy.valueOf(sortBy.toUpperCase())) {
+                case CREATED_AT -> orderSpecifiers.add(new OrderSpecifier<>(direction, company.createdAt));
+                case UPDATED_AT -> orderSpecifiers.add(new OrderSpecifier<>(direction, company.updatedAt));
+                case ID -> orderSpecifiers.add(new OrderSpecifier<>(direction, company.id));
+            }
+        });
+        return orderSpecifiers.toArray(new OrderSpecifier[0]);
+    }
+
+    private OrderSpecifier<?>[] getOrderPromotionSpecifiers(Pageable pageable) {
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        Sort sort = pageable.getSort();
+        sort.forEach(order -> {
+            String sortBy = order.getProperty();
+            Order direction = order.getDirection() == Sort.Direction.ASC ? Order.ASC : Order.DESC;
+            switch (PageSortBy.valueOf(sortBy.toUpperCase())) {
+                case CREATED_AT -> orderSpecifiers.add(new OrderSpecifier<>(direction, company.createdAt));
+                case UPDATED_AT -> orderSpecifiers.add(new OrderSpecifier<>(direction, company.updatedAt));
+                case ID -> orderSpecifiers.add(new OrderSpecifier<>(direction, company.id));
+            }
+        });
+        return orderSpecifiers.toArray(new OrderSpecifier[0]);
     }
 
 }
