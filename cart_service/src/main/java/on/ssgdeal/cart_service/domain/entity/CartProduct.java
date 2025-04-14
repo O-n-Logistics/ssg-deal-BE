@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import on.ssgdeal.cart_service.exception.CartException.MustBePositiveQuantityException;
 import org.springframework.data.redis.core.RedisHash;
 
 @RedisHash("cart_product")
@@ -34,6 +35,9 @@ public class CartProduct {
     }
 
     public void increaseQuantity(Long quantity) {
+        if (quantity <= 0) {
+            throw new MustBePositiveQuantityException();
+        }
         this.quantity += quantity;
     }
 }

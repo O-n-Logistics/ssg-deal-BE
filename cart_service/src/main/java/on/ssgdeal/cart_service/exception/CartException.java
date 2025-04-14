@@ -13,4 +13,10 @@ public class CartException extends CustomException {
             super(CartExceptionCode.NOT_ENOUGH_STOCK);
         }
     }
+
+    public static class MustBePositiveQuantityException extends CartException {
+        public MustBePositiveQuantityException() {
+            super(CartExceptionCode.MUST_BE_POSITIVE_QUANTITY);
+        }
+    }
 }
