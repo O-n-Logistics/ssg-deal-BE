@@ -71,6 +71,7 @@ public class PaymentProcessorServiceImpl implements PaymentProcessorService {
     }
 
     @Override
+    @Transactional
     public OrderPaymentPartialCancelResponseDto orderPaymentPartialCancel(Long totalOrderId,
         OrderPaymentPartialCancelRequestDto requestDto) {
         validTotalOrderId(totalOrderId);
