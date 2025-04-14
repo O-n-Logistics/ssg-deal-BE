@@ -92,8 +92,9 @@ class CartRepositoryImplTest {
                 cartRepository.addCartProduct(addCartProductDto);
 
                 // then
-                Object cartProduct = redisTemplate.opsForHash().get(key, hashKey);
-                assertThat(cartProduct).isNotNull();
+                Long loadedQuantity = (Long) redisTemplate.opsForHash().get(key, hashKey);
+                assertThat(loadedQuantity).isNotNull();
+                assertThat(loadedQuantity).isEqualTo(quantity);
             }
         }
 
@@ -114,8 +115,9 @@ class CartRepositoryImplTest {
                 cartRepository.addCartProduct(addCartProductDto);
 
                 // then
-                Object cartProduct = redisTemplate.opsForHash().get(key, hashKey);
-                assertThat(cartProduct).isNotNull();
+                Long loadedQuantity = (Long) redisTemplate.opsForHash().get(key, hashKey);
+                assertThat(loadedQuantity).isNotNull();
+                assertThat(loadedQuantity).isEqualTo(quantity);
             }
         }
     }
