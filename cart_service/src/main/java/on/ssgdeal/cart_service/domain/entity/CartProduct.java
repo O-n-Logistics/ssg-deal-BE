@@ -26,14 +26,6 @@ public class CartProduct {
             .build();
     }
 
-    @Override
-    public String toString() {
-        return "CartProduct{" +
-            "hashKey='" + hashKey + '\'' +
-            ", quantity=" + quantity +
-            '}';
-    }
-
     public void increaseQuantity(Long quantity) {
         this.quantity.increase(quantity);
     }
