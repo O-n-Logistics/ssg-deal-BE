@@ -20,7 +20,7 @@ public interface OrderServiceFeignClient {
     CommonResponse<Void> createOrderPaymentSuccess(
         @RequestBody CreateOrderPaymentSuccessRequestDto requestDto);
 
-    @PostMapping("/internal/v1/orders/payments/success")
+    @PostMapping("/internal/v1/orders/payments/fail")
     CommonResponse<Void> createOrderPaymentFail(
         @RequestBody CreateOrderPaymentFailRequestDto requestDto);
 }
