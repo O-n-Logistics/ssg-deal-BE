@@ -1,5 +1,6 @@
 package on.ssgdeal.payment_service.presentation.internal;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.payment_service.application.service.PaymentProcessorService;
@@ -31,7 +32,7 @@ public class PaymentInternalController {
     @PostMapping("/{totalOrderId}/partial-cancel")
     public ResponseEntity<CommonResponse<OrderPaymentPartialCancelResponseDto>> orderPartialCancelPayment(
         @PathVariable Long totalOrderId,
-        @RequestBody OrderPaymentPartialCancelRequestDto partialCancelRequestDto
+        @RequestBody @Valid OrderPaymentPartialCancelRequestDto partialCancelRequestDto
     ) {
         final var responseDto = paymentProcessorService.orderPaymentPartialCancel(totalOrderId,
             partialCancelRequestDto);
