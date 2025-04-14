@@ -16,7 +16,7 @@ public class ProductQuantity {
     }
 
     private void validate(Long quantity) {
-        if (quantity < MIN_QUANTITY) {
+        if (quantity == null || quantity < MIN_QUANTITY) {
             throw new MustBePositiveQuantityException();
         }
     }
