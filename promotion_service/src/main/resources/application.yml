@@ -7,7 +7,7 @@ spring:
   profiles:
     active: dev
   config:
-    import: "optional:configserver:"
+    import: "configserver:"
   data:
     redis:
       host: host
@@ -17,7 +17,7 @@ spring:
   cloud:
     config:
       discovery:
-        enabled: false
+        enabled: true
         service-id: config-service
 eureka:
   client:
