@@ -3,6 +3,8 @@ package on.ssgdeal.cart_service.presentation.external;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.cart_service.application.service.CartService;
+import on.ssgdeal.cart_service.application.service.dto.DeleteCartProductRequestDto;
+import on.ssgdeal.cart_service.presentation.external.dto.DeleteCartProductRequest;
 import on.ssgdeal.cart_service.application.service.dto.GetProductsByIdsResponseDto;
 import on.ssgdeal.common.auth.passport.Passport;
 import on.ssgdeal.common.auth.passport.PassportUtil;
@@ -29,6 +31,17 @@ public class CartController {
     private final CartService cartService;
 
     private final PassportUtil passportUtil;
+
+    @PostMapping("/delete")
+    public ResponseEntity<CommonResponse<Void>> deleteCartProducts(
+        @RequestBody DeleteCartProductRequest request,
+        HttpServletRequest servletRequest
+    ) {
+        Passport passport = passportUtil.getPassportBy(servletRequest);
+        DeleteCartProductRequestDto requestDto = request.toDto(passport.getUserId());
+        cartService.deleteCartProducts(requestDto);
+        return ResponseEntity.ok(CommonResponse.success());
+    }
 
     @GetMapping
     public ResponseEntity<CommonResponse<GetProductsByIdsResponseDto>> getCarts(

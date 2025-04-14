@@ -2,6 +2,7 @@ package on.ssgdeal.cart_service.infrastructure.persistence.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Optional;
 import on.ssgdeal.cart_service.infrastructure.persistence.repository.dto.UpdateCartProductDto;
 import on.ssgdeal.cart_service.domain.entity.CartProduct;
@@ -122,13 +123,12 @@ class CartRepositoryImplTest {
         }
     }
 
-
     @Nested
-    @DisplayName("상품을 업데이트하는 updateCartProduct 메서드는")
-    class Describe_UpdateCartProduct {
+    @DisplayName("장바구니 상품을 삭제하는 deleteCartProducts 메서드는")
+    class Describe_deleteCartProducts {
 
         @Nested
-        @DisplayName("장바구니에 상품이 존재할 때")
+        @DisplayName("장바구니에 상품이 하나 존재할 때")
         class Context_WithCartProduct {
 
             @BeforeEach
@@ -137,23 +137,40 @@ class CartRepositoryImplTest {
             }
 
             @Test
-            @DisplayName("장바구니에 상품을 업데이트한다")
-            void it_updateCartProduct() {
-                // given
-                CartProduct cartProduct = cartRepository.findCartProduct(key, hashKey).get();
-                long beforeQuantity = cartProduct.getQuantity();
-                long increaseAmount = 1L;
-                cartProduct.increaseQuantity(increaseAmount);
-
+            @DisplayName("장바구니에서 해당 상품을 삭제한다.")
+            void it_deletesCartProduct() {
                 // when
-                var updateCartProductDto = UpdateCartProductDto.from(key, cartProduct);
-                cartRepository.updateCartProduct(updateCartProductDto);
+                cartRepository.deleteCartProducts(key, List.of(hashKey));
 
-                // then
-                Object updatedCartProduct = redisTemplate.opsForHash().get(key, hashKey);
-                assertThat(updatedCartProduct).isNotNull();
-                assertThat((Long) updatedCartProduct)
-                    .isEqualTo(beforeQuantity + increaseAmount);
+                Object get = redisTemplate.opsForHash().get(key, hashKey);
+                assertThat(get).isNull();
+            }
+        }
+
+        @Nested
+        @DisplayName("장바구니에 상품이 여러 개 존재할 때")
+        class Context_WithMultipleCartProducts {
+
+            @BeforeEach
+            void setUp() {
+                redisTemplate.opsForHash().put(key, hashKey, quantity);
+                redisTemplate.opsForHash().put(key, "product:1", 3L);
+                redisTemplate.opsForHash().put(key, "product:2", 2L);
+            }
+
+            @Test
+            @DisplayName("장바구니에서 해당 상품들을 삭제한다.")
+            void it_deletesCartProducts() {
+                // when
+                cartRepository.deleteCartProducts(key, List.of(hashKey, "product:1", "product:2"));
+
+                Object get0 = redisTemplate.opsForHash().get(key, hashKey);
+                Object get1 = redisTemplate.opsForHash().get(key, "product:1");
+                Object get2 = redisTemplate.opsForHash().get(key, "product:2");
+
+                assertThat(get0).isNull();
+                assertThat(get1).isNull();
+                assertThat(get2).isNull();
             }
         }
     }

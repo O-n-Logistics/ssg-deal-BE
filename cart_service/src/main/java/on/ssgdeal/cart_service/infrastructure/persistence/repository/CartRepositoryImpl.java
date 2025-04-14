@@ -22,6 +22,11 @@ public class CartRepositoryImpl implements CartRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
+    public void deleteCartProducts(String key, List<String> hashKeys) {
+        hashKeys.forEach(hashKey -> redisTemplate.opsForHash().delete(key, hashKey));
+    }
+      
+    @Override
     public List<CartProduct> findAll(String key) {
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         return entries.entrySet().stream()

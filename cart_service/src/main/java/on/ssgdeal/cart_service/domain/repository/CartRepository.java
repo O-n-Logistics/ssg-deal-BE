@@ -8,6 +8,8 @@ import on.ssgdeal.cart_service.domain.entity.CartProduct;
 
 public interface CartRepository {
 
+    void deleteCartProducts(String key, List<String> hashKeys);
+
     List<CartProduct> findAll(String key);
 
     void addCartProduct(AddCartProductDto dto);
