@@ -24,4 +24,10 @@ public class PromotionException extends CustomException {
         }
     }
 
+    public static class InvalidPromotionStatusException extends PromotionException {
+        public InvalidPromotionStatusException() {
+            super(PromotionExceptionCode.PROMOTION_STATUS_INVALID);
+        }
+    }
+
 }

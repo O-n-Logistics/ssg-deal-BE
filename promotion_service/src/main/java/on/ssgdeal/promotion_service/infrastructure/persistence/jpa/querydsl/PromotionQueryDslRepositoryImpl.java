@@ -2,13 +2,18 @@ package on.ssgdeal.promotion_service.infrastructure.persistence.jpa.querydsl;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.promotion_service.domain.entity.Company;
+import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetCompaniesConditionDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.GetInProgressPromotionDetailDto;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import on.ssgdeal.promotion_service.domain.entity.dto.GetPromotionsConditionDto;
+import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,10 +26,11 @@ import static on.ssgdeal.promotion_service.domain.entity.QPromotion.promotion;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class QueryDslPromotionRepositoryImpl implements QueryDslPromotionRepository {
+public class PromotionQueryDslRepositoryImpl implements PromotionQueryDslRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    //TODO : 정렬 조건 추가
     @Override
     public Optional<GetInProgressPromotionDetailDto> findPromotionWithProductsById(
             Long promotionId,
@@ -64,6 +70,8 @@ public class QueryDslPromotionRepositoryImpl implements QueryDslPromotionReposit
 
         boolean hasNext = products.size() > pageable.getPageSize();
 
+        //TODO : Slice에 경우 다음 값에 대한 정보 추가
+
         Slice<GetInProgressPromotionDetailDto.ProductDetailDto> productSlice =
                 new SliceImpl<>(products, pageable, hasNext);
 
@@ -79,4 +87,44 @@ public class QueryDslPromotionRepositoryImpl implements QueryDslPromotionReposit
                 productSlice
         ));
     }
+
+    @Override
+    public Page<Promotion> findPromotions(GetPromotionsConditionDto conditionDto) {
+        List<Promotion> promotions = queryFactory
+                .select(promotion)
+                .from(promotion)
+                .where(
+                        containsKeyword(conditionDto.keyword(), promotion.title),
+                        filterStatus(conditionDto.filter())
+                )
+                .offset(conditionDto.pageable().getOffset())
+                .limit(conditionDto.pageable().getPageSize())
+                .fetch();
+
+        return new PageImpl<>(promotions, conditionDto.pageable(), promotions.size());
+    }
+
+    @Override
+    public Page<Company> findCompanies(GetCompaniesConditionDto conditionDto) {
+        List<Company> companies = queryFactory
+                .select(company)
+                .from(company)
+                .where(
+                        containsKeyword(conditionDto.keyword(), company.name.value)
+                )
+                .offset(conditionDto.pageable().getOffset())
+                .limit(conditionDto.pageable().getPageSize())
+                .fetch();
+
+        return new PageImpl<>(companies, conditionDto.pageable(), companies.size());
+    }
+
+    private BooleanExpression containsKeyword(String keyword, StringPath target) {
+        return keyword != null ? target.containsIgnoreCase(keyword) : null;
+    }
+
+    private BooleanExpression filterStatus(PromotionStatus filter) {
+        return filter != null ? promotion.status.eq(filter) : null;
+    }
+
 }
