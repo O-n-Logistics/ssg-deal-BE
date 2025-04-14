@@ -1,8 +1,10 @@
 package on.ssgdeal.payment_service.application.service;
 
 import lombok.RequiredArgsConstructor;
+import on.ssgdeal.payment_service.application.service.dto.request.OrderPaymentPartialCancelRequestDto;
 import on.ssgdeal.payment_service.application.service.dto.request.OrderPaymentRequestDto;
 import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentCancelResponseDto;
+import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentPartialCancelResponseDto;
 import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentResponseDto;
 import on.ssgdeal.payment_service.domain.entity.Payment;
 import on.ssgdeal.payment_service.domain.repository.PaymentRepository;
@@ -65,6 +67,22 @@ public class PaymentProcessorServiceImpl implements PaymentProcessorService {
             return OrderPaymentCancelResponseDto.success(payment);
         } catch (PaymentCancelException e) {
             return OrderPaymentCancelResponseDto.fail(payment);
+        }
+    }
+
+    @Override
+    public OrderPaymentPartialCancelResponseDto orderPaymentPartialCancel(Long totalOrderId,
+        OrderPaymentPartialCancelRequestDto requestDto) {
+        validTotalOrderId(totalOrderId);
+
+        Payment payment = paymentService.getPaymentByTotalOrderId(totalOrderId);
+
+        try {
+            paymentClient.partialCancelPayment(payment, requestDto);
+            payment.cancel();
+            return OrderPaymentPartialCancelResponseDto.success(payment);
+        } catch (PaymentCancelException e) {
+            return OrderPaymentPartialCancelResponseDto.fail(payment);
         }
     }
 

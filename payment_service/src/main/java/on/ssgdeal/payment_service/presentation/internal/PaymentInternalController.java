@@ -3,10 +3,13 @@ package on.ssgdeal.payment_service.presentation.internal;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.payment_service.application.service.PaymentProcessorService;
+import on.ssgdeal.payment_service.application.service.dto.request.OrderPaymentPartialCancelRequestDto;
 import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentCancelResponseDto;
+import on.ssgdeal.payment_service.application.service.dto.response.OrderPaymentPartialCancelResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,8 +22,19 @@ public class PaymentInternalController {
 
     @PostMapping("/{totalOrderId}/cancel")
     public ResponseEntity<CommonResponse<OrderPaymentCancelResponseDto>> orderCancelPayment(
-        @PathVariable Long totalOrderId) {
+        @PathVariable Long totalOrderId
+    ) {
         final var responseDto = paymentProcessorService.orderPaymentCancel(totalOrderId);
+        return ResponseEntity.ok(CommonResponse.success(responseDto));
+    }
+
+    @PostMapping("/{totalOrderId}/partial-cancel")
+    public ResponseEntity<CommonResponse<OrderPaymentPartialCancelResponseDto>> orderPartialCancelPayment(
+        @PathVariable Long totalOrderId,
+        @RequestBody OrderPaymentPartialCancelRequestDto partialCancelRequestDto
+    ) {
+        final var responseDto = paymentProcessorService.orderPaymentPartialCancel(totalOrderId,
+            partialCancelRequestDto);
         return ResponseEntity.ok(CommonResponse.success(responseDto));
     }
 }
