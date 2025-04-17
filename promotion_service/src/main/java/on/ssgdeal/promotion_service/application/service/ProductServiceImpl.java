@@ -267,10 +267,10 @@ public class ProductServiceImpl implements ProductService {
 
                     ValidateStockDecreasesResponse.CompanyDetail.CompanyProduct companyProduct =
                         ValidateStockDecreasesResponse.CompanyDetail.CompanyProduct.builder()
-                            .promotionStatus(promotionStatus)
+                            .promotionStatus(promotionStatus.getDescription())
                             .productId(pair.product.getId())
                             .productName(pair.product.getName().getValue())
-                            .productPreviewImgUrl(pair.product.getPreviewUrl().getValue())
+                            .productPreview(pair.product.getPreviewUrl().getValue())
                             .originalPrice(pair.product.getOriginalPrice().getValue())
                             .promotionPrice(pair.product.getPromotionPrice().getValue())
                             .optionId(pair.option.getId())
