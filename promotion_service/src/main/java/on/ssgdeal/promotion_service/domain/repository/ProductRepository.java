@@ -19,9 +19,6 @@ public interface ProductRepository {
 
     List<Product> findAllWithDetailsByIdsAndOptionIds(List<Long> productIds, List<Long> optionIds);
 
-    List<Product> findAllWithDetailsByCompanyIdsAndOptionIds(List<Long> companyIds,
-        List<Long> optionIds);
-
     List<Product> findAllWithDetailsByProductIdsAndOptionIds(List<Long> productIds,
         List<Long> optionIds);
 
