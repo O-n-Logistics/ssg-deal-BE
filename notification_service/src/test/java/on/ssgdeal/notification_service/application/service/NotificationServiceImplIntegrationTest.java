@@ -1,6 +1,5 @@
 package on.ssgdeal.notification_service.application.service;
 
-import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationRequestDto;
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import on.ssgdeal.notification_service.domain.entity.Notification;
@@ -36,9 +35,6 @@ public class NotificationServiceImplIntegrationTest {
 
     @MockitoBean
     private AuditorAware<Long> auditorAware;
-
-    @MockitoBean
-    private PassportUtil passportUtil;
 
     @MockitoBean
     private SlackClient slackClient;
