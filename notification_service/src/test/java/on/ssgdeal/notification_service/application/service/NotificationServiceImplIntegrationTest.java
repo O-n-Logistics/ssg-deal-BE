@@ -1,13 +1,15 @@
 package on.ssgdeal.notification_service.application.service;
 
+import on.ssgdeal.common.auth.passport.Passport;
+import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationRequestDto;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import on.ssgdeal.notification_service.domain.entity.Notification;
 import on.ssgdeal.notification_service.domain.entity.NotificationTemplate;
 import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
 import on.ssgdeal.notification_service.domain.repository.NotificationRepository;
 import on.ssgdeal.notification_service.domain.repository.NotificationTemplateRepository;
 import on.ssgdeal.notification_service.infrastructure.client.slack.converter.SlackTimestampToKSTConverter;
-import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import org.hibernate.AssertionFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("dev")
@@ -34,6 +38,9 @@ public class NotificationServiceImplIntegrationTest {
 
     @Autowired
     private NotificationService notificationService;
+
+    @MockitoBean
+    private PassportUtil passportUtil;
 
     @MockitoBean
     private SlackClient slackClient;
@@ -54,9 +61,13 @@ public class NotificationServiceImplIntegrationTest {
     private String mockTimestamp;
     private LocalDateTime mockSendAt;
 
-
     @BeforeEach
     void setUp() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        Passport mockPassport = mock(Passport.class);
+        when(mockPassport.getUserId()).thenReturn(1000L);
+        when(passportUtil.getPassportBy(request)).thenReturn(mockPassport);
+
         mockRequestDto = CreateNotificationRequestDto.builder()
                 .receiverSlackEmail("hyunj2034@naver.com")
                 .senderSlackEmail("master@naver.com")
