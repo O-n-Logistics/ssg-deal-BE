@@ -1,13 +1,11 @@
 package on.ssgdeal.notification_service.application.service;
 
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationRequestDto;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import on.ssgdeal.notification_service.domain.entity.Notification;
-import on.ssgdeal.notification_service.domain.entity.NotificationTemplate;
-import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
 import on.ssgdeal.notification_service.domain.repository.NotificationRepository;
 import on.ssgdeal.notification_service.domain.repository.NotificationTemplateRepository;
 import on.ssgdeal.notification_service.infrastructure.client.slack.converter.SlackTimestampToKSTConverter;
-import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import org.hibernate.AssertionFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,12 +13,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,6 +36,9 @@ public class NotificationServiceImplIntegrationTest {
     private NotificationService notificationService;
 
     @MockitoBean
+    private AuditorAware<Long> auditorAware;
+
+    @MockitoBean
     private SlackClient slackClient;
 
     @Autowired
@@ -49,14 +52,13 @@ public class NotificationServiceImplIntegrationTest {
 
     private CreateNotificationRequestDto mockRequestDto;
 
-    private NotificationTemplate mockTemplate;
-
     private String mockTimestamp;
     private LocalDateTime mockSendAt;
 
-
     @BeforeEach
     void setUp() {
+        when(auditorAware.getCurrentAuditor()).thenReturn(Optional.of(1000L));
+
         mockRequestDto = CreateNotificationRequestDto.builder()
                 .receiverSlackEmail("hyunj2034@naver.com")
                 .senderSlackEmail("master@naver.com")
@@ -67,16 +69,9 @@ public class NotificationServiceImplIntegrationTest {
                 .orderStatus("결제완료")
                 .build();
 
-        mockTemplate = NotificationTemplate.builder()
-                .type(NotificationTemplateType.ORDER_COMPLETED)
-                .content("주문자: {ordererName}\n주문번호: {orderId}\n결제금액: {paymentPrice}\n주문날짜: {orderAt}\n주문상태: {orderStatus}")
-                .build();
-
         mockTimestamp = "1744109481.123456";
 
         mockSendAt = LocalDateTime.of(2025, 4, 8, 19, 51, 21, 123456000);
-
-        notificationTemplateRepository.save(mockTemplate);
 
     }
 
