@@ -109,8 +109,21 @@ public class OrderException extends CustomException {
 
     public static class OrderAlreadyCancelException extends OrderException {
 
+        /**
+         * 주문이 이미 취소된 경우 발생하는 예외입니다.
+         */
         public OrderAlreadyCancelException() {
             super(OrderExceptionCode.ORDER_ALREADY_CANCEL);
+        }
+    }
+
+    public static class OrderCreateException extends OrderException {
+
+        /**
+         * 주문 생성 중 오류가 발생했을 때 발생하는 예외입니다.
+         */
+        public OrderCreateException() {
+            super(OrderExceptionCode.ORDER_CREATE_EXCEPTION);
         }
     }
 }

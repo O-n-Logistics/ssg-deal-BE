@@ -6,28 +6,22 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.application.dto.PageDto;
-import on.ssgdeal.order_service.application.service.dto.CancelOrderRequestDto;
-import on.ssgdeal.order_service.application.service.dto.CancelOrderResponseDto;
-import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderRequestDto;
-import on.ssgdeal.order_service.application.service.dto.CancelTotalOrderResponseDto;
-import on.ssgdeal.order_service.application.service.dto.CreateOrderRequestDto;
-import on.ssgdeal.order_service.application.service.dto.CreateUserInfoDto;
-import on.ssgdeal.order_service.application.service.dto.GetTotalOrderDetailResponseDto;
-import on.ssgdeal.order_service.application.service.dto.GetTotalOrdersResponseDto;
-import on.ssgdeal.order_service.application.service.dto.LoginUserInfoDto;
-import on.ssgdeal.order_service.application.service.dto.TotalOrderProductInfo;
-import on.ssgdeal.order_service.application.service.dto.TotalOrderProductInfo.ProductInfo;
-import on.ssgdeal.order_service.application.service.dto.UpdateCancelOrderSuccessRequestDto;
-import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderFailRequestDto;
-import on.ssgdeal.order_service.application.service.dto.UpdateTotalOrderSuccessRequestDto;
+import on.ssgdeal.common.command.ScopedCommandInvoker;
+import on.ssgdeal.order_service.application.command.CreateOrderCommand;
+import on.ssgdeal.order_service.application.command.OrderCommandFactory;
+import on.ssgdeal.order_service.application.dto.CancelOrderRequestDto;
+import on.ssgdeal.order_service.application.dto.CancelOrderResponseDto;
+import on.ssgdeal.order_service.application.dto.CancelTotalOrderRequestDto;
+import on.ssgdeal.order_service.application.dto.CancelTotalOrderResponseDto;
+import on.ssgdeal.order_service.application.dto.CreateOrderRequestDto;
+import on.ssgdeal.order_service.application.dto.GetTotalOrderDetailResponseDto;
+import on.ssgdeal.order_service.application.dto.GetTotalOrdersResponseDto;
+import on.ssgdeal.order_service.application.dto.LoginUserInfoDto;
+import on.ssgdeal.order_service.application.dto.UpdateCancelOrderSuccessRequestDto;
+import on.ssgdeal.order_service.application.dto.UpdateTotalOrderFailRequestDto;
+import on.ssgdeal.order_service.application.dto.UpdateTotalOrderSuccessRequestDto;
 import on.ssgdeal.order_service.domain.entity.Order;
-import on.ssgdeal.order_service.domain.entity.OrderProduct;
-import on.ssgdeal.order_service.domain.entity.Orderer;
 import on.ssgdeal.order_service.domain.entity.TotalOrder;
-import on.ssgdeal.order_service.domain.entity.TotalOrderPayment;
-import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderDto;
-import on.ssgdeal.order_service.domain.entity.dtos.CreateOrderProductDto;
-import on.ssgdeal.order_service.domain.entity.dtos.CreateTotalOrderDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrderDetailDto;
 import on.ssgdeal.order_service.domain.entity.dtos.GetTotalOrdersUserInfoDto;
 import on.ssgdeal.order_service.domain.entity.dtos.UpdateTotalOrderSuccessDto;
@@ -36,11 +30,11 @@ import on.ssgdeal.order_service.domain.enums.OrderStatus;
 import on.ssgdeal.order_service.domain.enums.TotalOrderStatus;
 import on.ssgdeal.order_service.domain.repository.TotalOrderRepository;
 import on.ssgdeal.order_service.exception.OrderException.OrderAlreadyCancelException;
+import on.ssgdeal.order_service.exception.OrderException.OrderCreateException;
 import on.ssgdeal.order_service.exception.OrderException.OrderNotCancelException;
 import on.ssgdeal.order_service.exception.OrderException.OrderNotFoundTotalOrderException;
 import on.ssgdeal.order_service.exception.OrderException.OrderNotOrdererException;
 import on.ssgdeal.order_service.exception.OrderException.OrderPaymentsError;
-import on.ssgdeal.order_service.exception.OrderException.OrderPromotionStockOver;
 import on.ssgdeal.order_service.exception.OrderException.OrderValidDestination;
 import on.ssgdeal.order_service.infrastructure.client.cart.feign.dtos.ClearCartRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.payment.feign.dtos.CancelOrderPaymentRequestDto;
@@ -48,8 +42,6 @@ import on.ssgdeal.order_service.infrastructure.client.payment.feign.dtos.CancelT
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.DecreaseProductStockRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.DecreaseProductStockResponseDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.GetProductInfoDto;
-import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.GetProductInfoRequestDto;
-import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.GetProductInfoRequestDto.GetProductDetails;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.InCreaseProductStockRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.slack.dtos.TotalOrderCompleteSendInfoDto;
 import on.ssgdeal.order_service.infrastructure.client.slack.feign.dtos.OrderCompleteSendSlackRequestDto;
@@ -78,53 +70,43 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentService paymentService;
     private final CartService cartService;
     private final OrderNumberGenerator orderNumberGenerator;
+    private final OrderCommandFactory orderCommandFactory;
+    private final ScopedCommandInvoker commandInvoker;
 
+    /**
+     * 주문 요청을 받아 새로운 주문을 생성합니다.
+     *
+     * @param request 주문 생성 요청 정보
+     * @param loginUserInfoDto 로그인한 사용자 정보
+     * @return 생성된 주문 정보를 담은 응답 객체
+     * @throws OrderCreateException 주문 생성에 실패한 경우 발생
+     */
     @Override
     @Transactional
     public CreateOrderResponse createOrder(
         CreateOrderRequestDto request,
         LoginUserInfoDto loginUserInfoDto
     ) {
-
-        log.info("주문 생성 요청: {}", request);
-
-        // 배송지 검증
-        ValidDestinationResponseDto validDestinationResponseDto = validDestinationRequestDto(
-            request.destinationId());
-
-        // 상품 정보 조회 요청
-        var productInfo = getGetProductInfoAndStockDecreaseResponseDto(request);
-
-        // 상품 재고 감소 요청
-        productStockRequest(productInfo);
-
-        List<CreateOrderDto> orderDtos = getCreateOrderDtos(productInfo);
-        String totalOrderNumber = getTotalOrderNumber();
-        long totalOrderPrice = getTotalOrderPrice(orderDtos);
-
-        // totalOrder 엔티티 생성
-        CreateTotalOrderDto creteTotalOrderDto = CreateTotalOrderDto.from(totalOrderNumber,
-            totalOrderPrice);
-        TotalOrder totalOrder = TotalOrder.create(creteTotalOrderDto);
-
-        // Orderer 생성
-        CreateUserInfoDto createUserInfoDto = CreateUserInfoDto.from(request, loginUserInfoDto,
-            validDestinationResponseDto);
-        Orderer orderer = Orderer.create(totalOrder, createUserInfoDto);
-
-        // totalOrderPayment 엔티티 생성
-        TotalOrderPayment totalOrderPayment = TotalOrderPayment.create(totalOrder);
-
-        // OrderProduct, Order 엔티티 생성
-        List<Order> orders = savedOrdersAndOrderProducts(totalOrder, orderDtos);
-
-        // totalOrder 저장
-        totalOrder.addDependencies(orderer, totalOrderPayment, orders);
-        totalOrderRepository.save(totalOrder);
-
-        return CreateOrderResponse.from(totalOrder);
+        try {
+            CreateOrderCommand command = orderCommandFactory.createOrderCommand(request,
+                loginUserInfoDto);
+            TotalOrder totalOrder = commandInvoker.executeCommand(command);
+            log.info("주문 생성 성공 : {}", totalOrder.getId());
+            return CreateOrderResponse.from(totalOrder);
+        } catch (Exception e) {
+            log.info("주문 생성 실패 : {}", e.getMessage());
+            throw new OrderCreateException();
+        }
     }
 
+    /**
+     * 주문 결제 성공 처리를 수행합니다.
+     *
+     * 결제 성공 시 주문 상태를 갱신하고, 슬랙 알림을 전송하며, 사용자의 장바구니를 비웁니다.
+     *
+     * @param requestDto 결제 성공 처리에 필요한 요청 정보
+     * @param loginUserInfo 결제 성공을 요청한 사용자 정보
+     */
     @Override
     @Transactional
     public void createTotalOrderPaymentSuccess(
@@ -342,6 +324,11 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * 상품 정보에 따라 프로모션 서비스에 재고 감소를 요청하고, 실패 시 이미 감소된 재고를 롤백합니다.
+     *
+     * @param productInfo 재고 감소가 필요한 상품 정보 DTO
+     */
     protected void productStockRequest(GetProductInfoDto productInfo) {
         List<DecreaseProductStockRequestDto> decreaseRequest = toDecreaseRequest(productInfo);
         List<DecreaseProductStockResponseDto> decreaseSuccessList = new ArrayList<>();
@@ -364,85 +351,12 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private List<Order> savedOrdersAndOrderProducts(
-        TotalOrder totalOrder,
-        List<CreateOrderDto> orderDtos
-    ) {
-        List<Order> orders = Order.create(totalOrder, orderDtos);
-        for (int i = 0; i < orders.size(); i++) {
-            Order order = orders.get(i);
-            CreateOrderDto createOrderDto = orderDtos.get(i);
-
-            List<OrderProduct> orderProducts = createOrderDto.products().stream()
-                .map(productDto -> OrderProduct.create(order, productDto)).toList();
-
-            order.addOrderProductDependency(orderProducts);
-        }
-        return orders;
-    }
-
-    private List<CreateOrderDto> getCreateOrderDtos(GetProductInfoDto productInfoAndStockDecrease) {
-        List<CreateOrderDto> orderDtos = productInfoAndStockDecrease.companyList().stream()
-            .map(companyInfo -> {
-                List<CreateOrderProductDto> productDtos = companyInfo.companyProductList().stream()
-                    .map(product -> {
-                        Long totalPrice = (product.promotionPrice() + product.extraPrice())
-                            * product.decreaseStockAmount();
-                        return CreateOrderProductDto.from(product, totalPrice);
-                    }).toList();
-
-                Long orderTotalPrice = productDtos.stream()
-                    .mapToLong(CreateOrderProductDto::totalPrice).sum();
-                return CreateOrderDto.from(orderTotalPrice, companyInfo.companyId(),
-                    companyInfo.companyName(), productDtos);
-            }).toList();
-        return orderDtos;
-    }
-
-    private long getTotalOrderPrice(List<CreateOrderDto> orderDtos) {
-        return orderDtos.stream().mapToLong(CreateOrderDto::orderTotalPrice).sum();
-    }
-
-    private String getTotalOrderNumber() {
-        return orderNumberGenerator.generateOrderNumber();
-    }
-
-    private GetProductInfoDto getGetProductInfoAndStockDecreaseResponseDto(
-        CreateOrderRequestDto request
-    ) {
-        TotalOrderProductInfo totalOrderProductInfo = convertPromotionRequestProductInfo(request);
-        var promotionRequestInfo = fromTotalOrderProductInfo(totalOrderProductInfo);
-
-        GetProductInfoDto productInfoDto;
-        try {
-            log.info("Order > Promotion");
-            log.info("주문 생성 상품 정보 조회 요청 : {}", promotionRequestInfo);
-            productInfoDto = promotionService.getProductInfoAndStockDecrease(promotionRequestInfo);
-            log.info("상품 정보 조회 성공 : {}", productInfoDto);
-        } catch (Exception e) {
-            log.info("조회 실패 및 재고 감소 불가능 상황 : {}", e.getMessage());
-            throw new OrderPromotionStockOver();
-        }
-        return productInfoDto;
-    }
-
-    private TotalOrderProductInfo convertPromotionRequestProductInfo(
-        CreateOrderRequestDto request
-    ) {
-        return new TotalOrderProductInfo(request.subOrders().stream().flatMap(
-            sub -> sub.orderedProducts().stream()
-                .map(p -> new ProductInfo(p.productId(), p.optionId(), p.quantity()))).toList());
-    }
-
-    protected GetProductInfoRequestDto fromTotalOrderProductInfo(
-        TotalOrderProductInfo totalOrderProductInfo) {
-        List<GetProductDetails> details = totalOrderProductInfo.products().stream().map(
-            p -> new GetProductInfoRequestDto.GetProductDetails(p.productId(), p.optionId(),
-                p.quantity())).toList();
-
-        return new GetProductInfoRequestDto(details);
-    }
-
+    /**
+     * GetProductInfoDto에서 각 상품의 재고 감소 요청 정보를 생성하여 리스트로 반환합니다.
+     *
+     * @param getProductInfoDto 재고 감소가 필요한 상품 정보가 포함된 DTO
+     * @return 각 상품별 재고 감소 요청 DTO 리스트
+     */
     protected List<DecreaseProductStockRequestDto> toDecreaseRequest(
         GetProductInfoDto getProductInfoDto) {
         return getProductInfoDto.companyList().stream()
