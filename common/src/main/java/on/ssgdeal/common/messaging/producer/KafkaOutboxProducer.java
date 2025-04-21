@@ -30,7 +30,7 @@ public class KafkaOutboxProducer {
                     if (outbox.isOverRetryCount()) {
                         log.error("재시도 횟수를 초과하여 메시지 발행을 실패했습니다. => id: {}",
                             outbox.getId());
-                        kafkaTemplate.send(topic + DLT_SUFFIX, payload);
+                        kafkaTemplate.send(topic + DLT_SUFFIX, key, payload);
                     }
                 } else {
                     outbox.success();
