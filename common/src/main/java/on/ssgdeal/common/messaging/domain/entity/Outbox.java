@@ -22,6 +22,8 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("success = false")
 public class Outbox {
 
+    private static final int MAX_RETRY_COUNT = 3;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -61,7 +63,7 @@ public class Outbox {
     }
 
     public boolean isOverRetryCount() {
-        return this.retryCount > 3;
+        return this.retryCount > MAX_RETRY_COUNT;
     }
 
     public void success() {
