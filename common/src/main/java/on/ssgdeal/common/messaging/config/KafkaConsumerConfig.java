@@ -105,6 +105,8 @@ public class KafkaConsumerConfig {
             .setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         // DLQ 정책 및 재시도 정책 적용
         factory.setCommonErrorHandler(defaultErrorHandler);
+        // 컨테이너 동시성 설정
+        factory.setConcurrency(Runtime.getRuntime().availableProcessors());
 
         return factory;
     }
