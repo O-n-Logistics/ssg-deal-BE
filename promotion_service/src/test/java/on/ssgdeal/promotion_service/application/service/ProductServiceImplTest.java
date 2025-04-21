@@ -116,7 +116,7 @@ class ProductServiceImplTest {
 
                 when(product.getOptions()).thenReturn(List.of(productOption));
 
-                when(productRepository.findAllWithDetailsByCompanyIdsAndOptionIds(anyList(),
+                when(productRepository.findAllWithDetailsByProductIdsAndOptionIds(anyList(),
                     anyList()))
                     .thenReturn(List.of(product));
 

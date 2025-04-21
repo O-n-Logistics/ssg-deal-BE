@@ -3,6 +3,7 @@ package on.ssgdeal.cart_service.infrastructure.client.product;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.cart_service.application.generator.RedisKeyGenerator;
 import on.ssgdeal.cart_service.application.service.ProductService;
 import on.ssgdeal.cart_service.domain.entity.CartProduct;
 import on.ssgdeal.cart_service.exception.CartException.NotEnoughStockException;
@@ -12,8 +13,8 @@ import on.ssgdeal.cart_service.infrastructure.client.product.feign.ProductFeignC
 import on.ssgdeal.cart_service.infrastructure.client.product.feign.dto.GetProductDetailsRequest;
 import on.ssgdeal.cart_service.infrastructure.client.product.feign.dto.GetProductDetailsRequest.ProductDetail;
 import on.ssgdeal.cart_service.infrastructure.client.product.feign.dto.GetProductDetailsResponse;
+import on.ssgdeal.cart_service.infrastructure.client.product.feign.dto.GetProductOptionsRequest;
 import on.ssgdeal.cart_service.infrastructure.client.product.feign.dto.GetProductOptionsResponse;
-import on.ssgdeal.cart_service.application.generator.RedisKeyGenerator;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import org.springframework.stereotype.Service;
 
@@ -25,22 +26,20 @@ public class ProductServiceImpl implements ProductService {
     private final ProductFeignClient productFeignClient;
 
     @Override
-    public List<GetProductDetailsResponse> getProductsByHashKeys(List<CartProduct> cartProducts) {
+    public GetProductDetailsResponse getProductsByHashKeys(List<CartProduct> cartProducts) {
         log.info("getProductsByIds cartProducts: {}", cartProducts);
 
-        return cartProducts.stream()
-            .map(key -> {
-                GetProductDetailsRequest request = new GetProductDetailsRequest(
-                    List.of(
-                        new ProductDetail(
-                            RedisKeyGenerator.parseProductId(key.getHashKey()),
-                            RedisKeyGenerator.parseOptionId(key.getHashKey())
-                        )
-                    )
-                );
-                return productFeignClient.getProductDetails(request).data();
-            })
+        List<ProductDetail> productDetailList = cartProducts.stream()
+            .map(key ->
+                new ProductDetail(
+                    RedisKeyGenerator.parseProductId(key.getHashKey()),
+                    RedisKeyGenerator.parseOptionId(key.getHashKey())
+                )
+            )
             .toList();
+
+        GetProductDetailsRequest request = GetProductDetailsRequest.from(productDetailList);
+        return productFeignClient.getProductDetails(request).data();
     }
 
     @Override
@@ -49,8 +48,9 @@ public class ProductServiceImpl implements ProductService {
         return cartProducts.stream()
             .map(key -> {
                 Long productId = RedisKeyGenerator.parseProductId(key.getHashKey());
+                GetProductOptionsRequest request = GetProductOptionsRequest.from(productId);
                 GetProductOptionsResponse response =
-                    productFeignClient.getProductOptions(productId).data();
+                    productFeignClient.getProductOptions(request).data();
                 return new GetProductOptionsResponseDto(productId, response.options().stream()
                     .map(option -> new GetProductOptionsResponseDto.Option(
                         option.optionId(),

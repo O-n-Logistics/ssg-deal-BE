@@ -49,6 +49,7 @@ public class CartServiceImpl implements CartService {
                             updateCartProduct = CartProduct.create(
                                 updateHashKey, requestDto.quantity());
                         }
+                        cartRepository.deleteCartProducts(key, List.of(exist.getHashKey()));
                         cartRepository.updateCartProduct(
                             UpdateCartProductDto.from(key, updateCartProduct));
                     } else {
@@ -88,13 +89,13 @@ public class CartServiceImpl implements CartService {
         List<CartProduct> cartProducts = cartRepository.findAll(key);
         log.info("getCarts cartProducts: {}", cartProducts);
 
-        List<GetProductDetailsResponse> detailsResponseList =
+        GetProductDetailsResponse detailsResponse =
             productService.getProductsByHashKeys(cartProducts);
         List<GetProductOptionsResponseDto> productOptionsResponses =
             productService.getProductOptions(cartProducts);
 
         return GetProductsByIdsResponseDto.from(
-            detailsResponseList, productOptionsResponses, cartProducts);
+            detailsResponse, productOptionsResponses, cartProducts);
     }
 
     @Override
