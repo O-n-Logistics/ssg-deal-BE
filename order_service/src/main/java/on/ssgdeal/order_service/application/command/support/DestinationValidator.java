@@ -15,7 +15,7 @@ public class DestinationValidator {
 
     private final UserService userService;
 
-    protected ValidDestinationResponseDto valid(Long destinationId) {
+    public ValidDestinationResponseDto valid(Long destinationId) {
         ValidDestinationRequestDto validDestinationRequest = ValidDestinationRequestDto.from(
             destinationId);
         try {
@@ -29,6 +29,4 @@ public class DestinationValidator {
             throw new OrderValidDestination();
         }
     }
-
-
 }

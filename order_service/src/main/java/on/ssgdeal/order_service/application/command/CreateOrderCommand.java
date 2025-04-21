@@ -34,43 +34,23 @@ public class CreateOrderCommand implements Command<TotalOrder> {
     @Override
     public TotalOrder execute() {
 
-        ValidDestinationResponseDto validDestinationResponseDto = support.validDestination(
-            request.destinationId());
+        // 검증 및 재고 처리 단계
+        ValidateResult validateResult = validateAndDecreaseStock();
 
-        GetProductInfoDto productInfo = support.validProductInfo(request);
-        support.decreaseStock(productInfo);
+        // 주문 데이터 준비 단계
+        OrderPreparationData prepData = prepareOrderData(validateResult);
 
-        List<CreateOrderDto> orderDtos = getCreateOrderDtos(productInfo);
-        String totalOrderNumber = getTotalOrderNumber();
-        long totalOrderPrice = getTotalOrderPrice(orderDtos);
-
-        // totalOrder 엔티티 생성
-        CreateTotalOrderDto creteTotalOrderDto = CreateTotalOrderDto.from(totalOrderNumber,
-            totalOrderPrice);
-        TotalOrder totalOrder = TotalOrder.create(creteTotalOrderDto);
-
-        // Orderer 생성
-        CreateUserInfoDto createUserInfoDto = CreateUserInfoDto.from(request, loginUserInfoDto,
-            validDestinationResponseDto);
-        Orderer orderer = Orderer.create(totalOrder, createUserInfoDto);
-
-        // totalOrderPayment 엔티티 생성
-        TotalOrderPayment totalOrderPayment = TotalOrderPayment.create(totalOrder);
-
-        // OrderProduct, Order 엔티티 생성
-        List<Order> orders = savedOrdersAndOrderProducts(totalOrder, orderDtos);
-
-        // totalOrder 저장
-        totalOrder.addDependencies(orderer, totalOrderPayment, orders);
-        TotalOrder savedTotalOrder = totalOrderRepository.save(totalOrder);
-
-        log.info("주문 생성 완료 : {}", savedTotalOrder.getId());
+        // 엔티티 생성 및 저장 단계
+        TotalOrder savedTotalOrder = createAndSaveTotalOrder(prepData);
+        log.info("주문 생성 완료 : {}", savedTotalOrder);
         return savedTotalOrder;
     }
 
     @Override
     public void undo() {
-
+        // 주문 생성 취소는 비즈니스 요구 사항에 따라
+        // Outbox event 발행 예정입니다.
+        log.warn("CreateOrderCommand undo 기능을 지원하지 않습니다.");
     }
 
     private List<Order> savedOrdersAndOrderProducts(
@@ -113,5 +93,61 @@ public class CreateOrderCommand implements Command<TotalOrder> {
 
     private String getTotalOrderNumber() {
         return orderNumberGenerator.generateOrderNumber();
+    }
+
+    // 검증 및 재고 감소를 처리하는 새 메서드
+    private ValidateResult validateAndDecreaseStock() {
+        ValidDestinationResponseDto validDestinationResponseDto = support.validateDestination(
+            request.destinationId());
+
+        GetProductInfoDto productInfo = support.validateProductInfo(request);
+        support.decreaseStock(productInfo);
+
+        return new ValidateResult(validDestinationResponseDto, productInfo);
+    }
+
+    // 주문 데이터를 준비하는 새 메서드
+    private OrderPreparationData prepareOrderData(ValidateResult validateResult) {
+        List<CreateOrderDto> orderDtos = getCreateOrderDtos(validateResult.productInfo());
+        String totalOrderNumber = getTotalOrderNumber();
+        long totalOrderPrice = getTotalOrderPrice(orderDtos);
+
+        return new OrderPreparationData(orderDtos, totalOrderNumber, totalOrderPrice,
+            validateResult);
+    }
+
+    // 엔티티를 생성하고 저장하는 새 메서드
+    private TotalOrder createAndSaveTotalOrder(OrderPreparationData prepData) {
+        // totalOrder 엔티티 생성
+        CreateTotalOrderDto creteTotalOrderDto = CreateTotalOrderDto.from(
+            prepData.totalOrderNumber(),
+            prepData.totalOrderPrice());
+        TotalOrder totalOrder = TotalOrder.create(creteTotalOrderDto);
+
+        // Orderer 생성
+        CreateUserInfoDto createUserInfoDto = CreateUserInfoDto.from(request, loginUserInfoDto,
+            prepData.validateResult().validDestinationResponseDto());
+        Orderer orderer = Orderer.create(totalOrder, createUserInfoDto);
+
+        // totalOrderPayment 엔티티 생성
+        TotalOrderPayment totalOrderPayment = TotalOrderPayment.create(totalOrder);
+
+        // OrderProduct, Order 엔티티 생성
+        List<Order> orders = savedOrdersAndOrderProducts(totalOrder, prepData.orderDtos());
+
+        // totalOrder 저장
+        totalOrder.addDependencies(orderer, totalOrderPayment, orders);
+        return totalOrderRepository.save(totalOrder);
+    }
+
+    // 결과 객체
+    private record ValidateResult(ValidDestinationResponseDto validDestinationResponseDto,
+                                  GetProductInfoDto productInfo) {
+
+    }
+
+    private record OrderPreparationData(List<CreateOrderDto> orderDtos, String totalOrderNumber,
+                                        long totalOrderPrice, ValidateResult validateResult) {
+
     }
 }

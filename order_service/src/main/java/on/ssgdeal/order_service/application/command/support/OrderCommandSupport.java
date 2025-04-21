@@ -16,11 +16,11 @@ public class OrderCommandSupport {
     private final ProductValidator productValidator;
     private final StockManager stockManager;
 
-    public ValidDestinationResponseDto validDestination(Long destinationId) {
+    public ValidDestinationResponseDto validateDestination(Long destinationId) {
         return destinationValidator.valid(destinationId);
     }
 
-    public GetProductInfoDto validProductInfo(CreateOrderRequestDto request) {
+    public GetProductInfoDto validateProductInfo(CreateOrderRequestDto request) {
         return productValidator.valid(request);
     }
 

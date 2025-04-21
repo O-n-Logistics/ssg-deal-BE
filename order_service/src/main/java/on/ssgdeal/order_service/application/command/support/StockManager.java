@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.order_service.application.service.PromotionService;
+import on.ssgdeal.order_service.exception.OrderException.OrderPromotionStockException;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.DecreaseProductStockRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.DecreaseProductStockResponseDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.GetProductInfoDto;
@@ -30,13 +31,23 @@ public class StockManager {
                 log.info("재고 감소 요청 성공 productId: {}", decreaseProductStockResponseDto.productId());
             }
         } catch (Exception e) {
-            log.info("재고 감소 요청 실패, 롤백 요청 : {}", e.getMessage());
+            log.error("재고 감소 요청 실패, 롤백 요청 : {}", e.getMessage());
             List<InCreaseProductStockRequestDto> increaseRequest = toIncreaseRequest(
                 decreaseSuccessList);
+            boolean rollbackSuccess = true;
             for (InCreaseProductStockRequestDto increaseRequestDto : increaseRequest) {
-                log.info("롤백 요청 productId: {}", increaseRequestDto.productId());
-                promotionService.increaseProductStock(increaseRequestDto);
+                try {
+                    promotionService.increaseProductStock(increaseRequestDto);
+                } catch (Exception rollbackEx) {
+                    rollbackSuccess = false;
+                    log.error("롤백 실패 productId: {}, 원인: {}",
+                        increaseRequestDto.productId(), rollbackEx.getMessage());
+                }
             }
+            if (!rollbackSuccess) {
+                log.error("일부 상품의 재고 롤백이 실패했습니다. 수동 조정이 필요합니다.");
+            }
+            throw new OrderPromotionStockException();
         }
     }
 
