@@ -1,4 +1,4 @@
-package on.ssgdeal.notification_service.infrastructure.config;
+package on.ssgdeal.notification_service.configuration;
 
 import on.ssgdeal.notification_service.application.service.NotificationSender;
 import on.ssgdeal.notification_service.domain.enums.NotificationChannelType;
