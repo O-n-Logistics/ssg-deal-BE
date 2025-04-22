@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
-import on.ssgdeal.common.messaging.domain.enums.Topic;
-import on.ssgdeal.common.messaging.exception.NonRecoverableException;
+import on.ssgdeal.common.messaging.exception.EventPayloadException.EventDeserializeException;
+import on.ssgdeal.common.messaging.exception.EventPayloadException.EventSerializeException;
 
 @Slf4j
 public record EventEnvelope<T extends EventPayload>(
@@ -38,7 +38,7 @@ public record EventEnvelope<T extends EventPayload>(
             return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
             log.error("EventEnvelope 의 직렬화를 실패했습니다.");
-            throw new NonRecoverableException();
+            throw new EventSerializeException();
         }
     }
 
@@ -55,7 +55,7 @@ public record EventEnvelope<T extends EventPayload>(
             return EventEnvelope.wrap(topic, payload, timestamp);
         } catch (Exception e) {
             log.error("Envelope JSON 역직렬화 실패", e);
-            throw new NonRecoverableException();
+            throw new EventDeserializeException();
         }
     }
 }
