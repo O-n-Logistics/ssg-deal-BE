@@ -78,9 +78,9 @@ class ProductServiceImplTest {
                 when(companyNameVO.getValue()).thenReturn("Test Company");
                 when(company.getName()).thenReturn(companyNameVO);
 
-                // Promotion (검증 로직에서 IN_PROGRESS이면 예외 발생하므로, FINISHED 상태여야 함)
+                // Promotion (검증 로직에서 IN_PROGRESS 상태여야 함)
                 Promotion promotion = mock(Promotion.class);
-                when(promotion.getStatus()).thenReturn(PromotionStatus.FINISHED);
+                when(promotion.getStatus()).thenReturn(PromotionStatus.IN_PROGRESS);
                 when(company.getPromotion()).thenReturn(promotion);
 
                 // Product
