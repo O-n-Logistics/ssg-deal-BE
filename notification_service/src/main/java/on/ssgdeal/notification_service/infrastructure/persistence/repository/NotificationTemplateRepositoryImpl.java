@@ -24,4 +24,9 @@ public class NotificationTemplateRepositoryImpl implements NotificationTemplateR
     public Optional<NotificationTemplate> findByType(NotificationTemplateType type) {
         return notificationTemplateJpaRepository.findByType(type);
     }
+
+    @Override
+    public void deleteAll() {
+        notificationTemplateJpaRepository.deleteAll();
+    }
 }

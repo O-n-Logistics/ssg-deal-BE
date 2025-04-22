@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.notification_service.domain.entity.NotificationTemplate;
 import on.ssgdeal.notification_service.domain.entity.dto.CreateNotificationDto;
+import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

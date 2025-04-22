@@ -3,50 +3,40 @@ package on.ssgdeal.notification_service.application.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationRequestDto;
-import on.ssgdeal.notification_service.domain.entity.Notification;
+import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import on.ssgdeal.notification_service.domain.entity.NotificationTemplate;
-import on.ssgdeal.notification_service.domain.entity.dto.CreateNotificationDto;
+import on.ssgdeal.notification_service.domain.enums.NotificationChannelType;
 import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
-import on.ssgdeal.notification_service.domain.repository.NotificationRepository;
 import on.ssgdeal.notification_service.domain.repository.NotificationTemplateRepository;
 import on.ssgdeal.notification_service.exception.NotificationException;
-import on.ssgdeal.notification_service.infrastructure.client.slack.converter.SlackTimestampToKSTConverter;
-import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j(topic = "NotificationServiceImpl")
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
-    private final SlackClient slackClient;
-    private final NotificationRepository notificationRepository;
+    private final Map<NotificationChannelType, NotificationSender> senderMap;
     private final NotificationTemplateRepository notificationTemplateRepository;
-    private final SlackTimestampToKSTConverter slackTimestampToKSTConverter;
 
     @Override
     @Transactional
-    public CreateNotificationResponseDto sendSlackNotification(
-            final CreateNotificationRequestDto requestDto
+    public CreateNotificationResponseDto sendNotification(
+            final CreateNotificationRequestDto requestDto,
+            final NotificationChannelType senderType
     ) {
-        log.info("주문 완료 슬랙 메시지 전송 요청 : {}", requestDto);
+        log.info("알림 전송 요청 : {}", requestDto);
         NotificationTemplate template = getOrThrowNotificationTemplate(NotificationTemplateType.ORDER_COMPLETED);
         String content = createOrderCompletedSlackNotification(requestDto, template.getContent());
-        String timestamp = slackClient.sendNotificationToUser(requestDto.receiverSlackEmail(), content);
-        LocalDateTime sendAt = slackTimestampToKSTConverter.convertToKST(timestamp);
-        CreateNotificationDto notificationDto = CreateNotificationRequestDto.toDto(
-                requestDto,
-                content,
-                template,
-                sendAt
-        );
-        log.info("알림 생성 DTO : {}", notificationDto.toString());
-        Notification notification = Notification.create(notificationDto);
-        notificationRepository.save(notification);
-        return CreateNotificationResponseDto.from(notification);
+
+        NotificationSender sender = Optional.ofNullable(senderMap.get(senderType))
+                .orElseThrow(NotificationException.NotificationChannelNotFoundException::new);
+
+        return sender.sendNotification(requestDto, content, template);
     }
 
     private String createOrderCompletedSlackNotification(
@@ -67,3 +57,4 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(NotificationException.NotificationTemplateNotFoundException::new);
     }
 }
+
