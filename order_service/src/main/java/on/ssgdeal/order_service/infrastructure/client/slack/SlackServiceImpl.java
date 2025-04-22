@@ -2,11 +2,19 @@ package on.ssgdeal.order_service.infrastructure.client.slack;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.common.messaging.core.EventEnvelope;
+import on.ssgdeal.common.messaging.domain.entity.Outbox;
+import on.ssgdeal.common.messaging.domain.entity.Outbox.AggregateType;
 import on.ssgdeal.order_service.application.service.SlackService;
+import on.ssgdeal.common.messaging.domain.enums.Topic;
 import on.ssgdeal.order_service.infrastructure.client.slack.feign.SlackServiceFeignClient;
 import on.ssgdeal.order_service.infrastructure.client.slack.feign.dtos.OrderCompleteSendSlackRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.slack.feign.dtos.OrderCompleteSendSlackResponseDto;
+import on.ssgdeal.order_service.infrastructure.messaging.dtos.OrderSuccessNotificationEvent;
+import on.ssgdeal.order_service.infrastructure.persistence.jpa.OutboxRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class SlackServiceImpl implements SlackService {
 
     private final SlackServiceFeignClient feignClient;
+    private final OutboxRepository outboxRepository;
 
     @Override
     public OrderCompleteSendSlackResponseDto sendOrderCompleteMessage(
@@ -21,5 +30,23 @@ public class SlackServiceImpl implements SlackService {
         log.info("sendOrderCompleteMessage: {}", requestDto);
         var orderCompleteSendSlackResponseDto = feignClient.sendOrderCompleteMessage(requestDto);
         return orderCompleteSendSlackResponseDto.data();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishCompletedOrderSlackMessage(
+        Long totalOrderId,
+        OrderSuccessNotificationEvent payload
+    ) {
+        log.info("publishCompletedOrderSlackMessage: {} - {}", totalOrderId, payload);
+        EventEnvelope<OrderSuccessNotificationEvent> envelope = EventEnvelope.wrap(
+            Topic.ORDER_SUCCESS_NOTIFICATION_EVENT, payload);
+        Outbox outbox = Outbox.create(
+            envelope.topic().toString(),
+            AggregateType.ORDER,
+            totalOrderId,
+            envelope.toJson()
+        );
+        outboxRepository.save(outbox);
     }
 }
