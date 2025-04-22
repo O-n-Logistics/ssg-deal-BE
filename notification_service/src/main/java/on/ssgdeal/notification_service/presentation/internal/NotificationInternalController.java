@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.presentation.dto.CommonResponse;
 import on.ssgdeal.notification_service.application.service.NotificationServiceImpl;
 import on.ssgdeal.notification_service.application.service.dto.CreateNotificationResponseDto;
+import on.ssgdeal.notification_service.domain.enums.NotificationChannelType;
 import on.ssgdeal.notification_service.presentation.internal.dto.CreateNotificationRequest;
 import on.ssgdeal.notification_service.presentation.internal.dto.mapper.NotificationPresentationMapper;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class NotificationInternalController {
     ) {
         final var requestDto = notificationMapper.toNotificationRequestDto(request, "hyunj2034@naver.com");
         log.info("주문 완료 슬랙 메시지 요청 : {}", request);
-        final var responseDto = notificationServiceImpl.sendSlackNotification(requestDto);
+        final var responseDto = notificationServiceImpl.sendNotification(requestDto, NotificationChannelType.SLACK);
         return ResponseEntity.ok().body(CommonResponse.success(responseDto));
     }
 }
