@@ -15,6 +15,8 @@ public interface ProductRepository {
 
     Optional<Product> findById(Long id);
 
+    Optional<Product> findWithOptionsById(Long id);
+
     Optional<Product> findWithPromotionById(Long id);
 
     Product save(Product product);

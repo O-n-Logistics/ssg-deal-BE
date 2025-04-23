@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.application.dto.PageDto;
 import on.ssgdeal.common.application.dto.SliceDto;
+import on.ssgdeal.promotion_service.application.service.dto.mapper.ProductApplicationMapper;
 import on.ssgdeal.promotion_service.application.service.dto.product.DecreaseStockRequestDto;
 import on.ssgdeal.promotion_service.application.service.dto.product.FindProductByPromotionIdRequestDto;
 import on.ssgdeal.promotion_service.application.service.dto.product.GetProductDetailsRequestDto;
@@ -20,14 +21,16 @@ import on.ssgdeal.promotion_service.application.service.dto.product.IncreaseStoc
 import on.ssgdeal.promotion_service.application.service.dto.product.UpdateOptionRequestDto;
 import on.ssgdeal.promotion_service.application.service.dto.product.UpdateProductRequestDto;
 import on.ssgdeal.promotion_service.application.service.dto.product.ValidateStockDecreasesRequestDto;
+import on.ssgdeal.promotion_service.application.service.dto.stock.UpdateStockRequestDto;
+import on.ssgdeal.promotion_service.application.service.dto.stock.UpdateStockResponseDto;
 import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Product;
 import on.ssgdeal.promotion_service.domain.entity.Product.UpdateProductDto;
 import on.ssgdeal.promotion_service.domain.entity.ProductOption;
 import on.ssgdeal.promotion_service.domain.entity.ProductRanking;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
-import on.ssgdeal.promotion_service.domain.entity.mapper.ProductMapper;
 import on.ssgdeal.promotion_service.domain.enums.PromotionStatus;
+import on.ssgdeal.promotion_service.domain.enums.StockOperation;
 import on.ssgdeal.promotion_service.domain.repository.ProductRepository;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import on.ssgdeal.promotion_service.exception.ProductException;
@@ -62,9 +65,10 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
-    private final ProductMapper productMapper;
     private final ProductCacheManager productCacheManager;
 
+    private final StockService stockService;
+    private final ProductApplicationMapper productApplicationMapper;
 
     @Override
     public PageDto<SearchProductResponse> searchWithProductName(
@@ -83,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
             ProductException.ProductNotFoundException::new
         );
         log.info("Find by id: {}", productId);
-        return productMapper.toFindByIdResponse(product);
+        return productApplicationMapper.toFindByIdResponse(product);
     }
 
     @Override
@@ -99,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
 
         Slice<Product> products = productRepository.findByCompanyId(companyId, dto.pageable());
         Slice<FindByPromotionIdResponse> responses = products.map(
-            productMapper::toFindByPromotionIdResponse
+            productApplicationMapper::toFindByPromotionIdResponse
         );
 
         return SliceDto.from(responses);
@@ -119,29 +123,16 @@ public class ProductServiceImpl implements ProductService {
         DecreaseStockRequestDto dto
     ) {
         log.info("Decrease stock: {}", dto);
-        Product product = findProductByIdOrElseThrow(dto.productId());
 
-        validatePromotionStatus(product);
+        UpdateStockRequestDto stockRequestDto = productApplicationMapper.toDto(dto);
+        UpdateStockResponseDto stockResponseDto = stockService.updateStock(
+            StockOperation.DECREASE,
+            stockRequestDto);
 
-        ProductOption productOption = findOptionByProductAndIdOrElseThrow(
-            product,
-            dto.optionId()
-        );
-
-        productOption.getProductStock().decrease(dto.decreaseStockAmount());
-
-        Product updatedProduct = productRepository.save(product);
-
-        ProductOption updatedProductOption = findOptionByProductAndIdOrElseThrow(
-            updatedProduct,
-            dto.optionId()
-        );
-
-        return productMapper.toDecreaseStockResponse(
-            updatedProduct,
-            updatedProductOption,
-            dto.decreaseStockAmount()
-        );
+        return productApplicationMapper.toDecreaseStockResponse(
+            stockResponseDto.product(),
+            stockResponseDto.productOption(),
+            stockRequestDto.amount());
     }
 
     @Override
@@ -150,29 +141,16 @@ public class ProductServiceImpl implements ProductService {
         IncreaseStockRequestDto dto
     ) {
         log.info("Increase stock: {}", dto);
-        Product product = findProductByIdOrElseThrow(dto.productId());
 
-        validatePromotionStatus(product);
+        UpdateStockRequestDto stockRequestDto = productApplicationMapper.toDto(dto);
+        UpdateStockResponseDto stockResponseDto = stockService.updateStock(
+            StockOperation.INCREASE,
+            stockRequestDto);
 
-        ProductOption productOption = findOptionByProductAndIdOrElseThrow(
-            product,
-            dto.optionId()
-        );
-
-        productOption.getProductStock().increase(dto.increaseStockAmount());
-
-        Product updatedProduct = productRepository.save(product);
-
-        ProductOption updatedProductOption = findOptionByProductAndIdOrElseThrow(
-            updatedProduct,
-            dto.optionId()
-        );
-
-        return productMapper.toIncreaseStockResponse(
-            updatedProduct,
-            updatedProductOption,
-            dto.increaseStockAmount()
-        );
+        return productApplicationMapper.toIncreaseStockResponse(
+            stockResponseDto.product(),
+            stockResponseDto.productOption(),
+            stockRequestDto.amount());
     }
 
     @Override
@@ -413,14 +391,6 @@ public class ProductServiceImpl implements ProductService {
         return GetProductDetailsResponse.builder()
             .productDetails(productDetails)
             .build();
-    }
-
-    private void validatePromotionStatus(Product product) {
-        PromotionStatus status = product.getCompany().getPromotion().getStatus();
-
-        if (status == PromotionStatus.FINISHED) {
-            throw new PromotionException.PromotionNotInProgressException();
-        }
     }
 
     private Product findProductByIdOrElseThrow(Long productId) {
