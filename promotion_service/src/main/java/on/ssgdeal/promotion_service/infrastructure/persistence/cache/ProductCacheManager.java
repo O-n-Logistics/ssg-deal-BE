@@ -18,7 +18,7 @@ public class ProductCacheManager {
         cacheService.evictProductCache(productId);
     }
 
-    public void update(CachingProductDto dto) {
+    public void save(CachingProductDto dto) {
         cacheService.saveProductCache(dto);
     }
     public void save(List<CachingProductDto> dtos) {
