@@ -3,6 +3,7 @@ package on.ssgdeal.promotion_service.infrastructure.persistence.jpa;
 import java.util.List;
 import java.util.Optional;
 import on.ssgdeal.promotion_service.domain.entity.Product;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,8 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.company.id = :companyId")
     Slice<Product> findByCompanyId(@Param("companyId") Long companyId, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.company.id = :companyId")
+    Page<Product> findPageByCompanyId(@Param("companyId") Long companyId, Pageable pageable);
 
     Optional<Product> findById(Long id);
 

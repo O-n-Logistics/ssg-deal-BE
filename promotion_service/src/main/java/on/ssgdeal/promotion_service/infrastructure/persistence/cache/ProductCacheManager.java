@@ -3,6 +3,8 @@ package on.ssgdeal.promotion_service.infrastructure.persistence.cache;
 import on.ssgdeal.promotion_service.infrastructure.persistence.cache.dto.CachingProductDto;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class ProductCacheManager {
 
@@ -17,6 +19,9 @@ public class ProductCacheManager {
     }
 
     public void update(CachingProductDto dto) {
-        cacheService.updateProductCache(dto);
+        cacheService.saveProductCache(dto);
+    }
+    public void save(List<CachingProductDto> dtos) {
+        cacheService.saveProductListCache(dtos);
     }
 }
