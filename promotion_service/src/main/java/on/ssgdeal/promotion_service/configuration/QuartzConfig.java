@@ -3,6 +3,7 @@ package on.ssgdeal.promotion_service.configuration;
 import on.ssgdeal.promotion_service.infrastructure.batch.AutowiringSpringBeanJobFactory;
 import on.ssgdeal.promotion_service.infrastructure.batch.CacheProductDetailJobLauncher;
 import on.ssgdeal.promotion_service.infrastructure.batch.CacheProductStockJobLauncher;
+import on.ssgdeal.promotion_service.infrastructure.batch.PromotionFinishedStatusJobLauncher;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -22,14 +23,23 @@ public class QuartzConfig {
         factory.setJobFactory(jobFactory);
         factory.setOverwriteExistingJobs(true);
         factory.setStartupDelay(5);
-        factory.setJobDetails(cacheProductDetailJobDetail(), cacheProductStockJobDetail());
-        factory.setTriggers(cacheProductDetailJobTrigger(), cacheProductStockJobTrigger());
+        factory.setJobDetails(cacheProductDetailJobDetail(), cacheProductStockJobDetail(), promotionFinishedStatusJobDetail());
+        factory.setTriggers(cacheProductDetailJobTrigger(), cacheProductStockJobTrigger(), promotionFinishedStatusJobTrigger());
         return factory;
     }
 
     @Bean
     public Scheduler scheduler(SchedulerFactoryBean factory) {
         return factory.getScheduler();
+    }
+
+    @Bean
+    @Qualifier("promotionFinishedStatusJobDetail")
+    public JobDetail promotionFinishedStatusJobDetail() {
+        return JobBuilder.newJob(PromotionFinishedStatusJobLauncher.class)
+                .withIdentity("promotionFinishedStatusJob")
+                .storeDurably()
+                .build();
     }
 
     @Bean
@@ -47,6 +57,19 @@ public class QuartzConfig {
         return JobBuilder.newJob(CacheProductStockJobLauncher.class)
                 .withIdentity("cacheProductStockJob")
                 .storeDurably()
+                .build();
+    }
+
+    @Bean
+    @Qualifier("promotionFinishedStatusJobTrigger")
+    public Trigger promotionFinishedStatusJobTrigger() {
+
+        return TriggerBuilder.newTrigger()
+                .forJob(promotionFinishedStatusJobDetail())
+                .withIdentity("promotionFinishedStatusJobTrigger")
+                .withSchedule(
+                        CronScheduleBuilder.cronSchedule("0 0 0 * * ?")
+                )
                 .build();
     }
 

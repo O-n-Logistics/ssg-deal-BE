@@ -17,6 +17,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.support.CompositeItemProcessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -27,7 +28,7 @@ import java.util.List;
 @Configuration
 @EnableBatchProcessing
 @RequiredArgsConstructor
-public class ProductCacheJobConfig {
+public class BatchJobConfig {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
@@ -37,8 +38,20 @@ public class ProductCacheJobConfig {
     private final ProductDetailToDtoProcessor productDetailToDtoProcessor;
     private final ProductDetailWriter productDetailWriter;
     private final ProductStockWriter productStockWriter;
+    private final PromotionStatusProcessor promotionStatusProcessor;
+    private final PromotionStatusWriter promotionStatusWriter;
 
     @Bean
+    @Qualifier("promotionFinishedStatusJob")
+    public Job promotionFinishedStatusJob() {
+        return new JobBuilder("promotionFinishedStatusJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .start(promotionFinishedStatusStep())
+                .build();
+    }
+
+    @Bean
+    @Qualifier("cacheProductDetailJob")
     public Job cacheProductDetailJob() {
         return new JobBuilder("cacheProductDetailJob", jobRepository)
                 .incrementer(new RunIdIncrementer())
@@ -47,14 +60,26 @@ public class ProductCacheJobConfig {
     }
 
     @Bean
+    @Qualifier("cacheProductStockJob")
     public Job cacheProductStockJob() {
         return new JobBuilder("cacheProductStockJob", jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .start(cacheProductStockStep())
                 .build();
     }
+    @Bean
+    @Qualifier("promotionFinishedStatusStep")
+    public Step promotionFinishedStatusStep() {
+        return new StepBuilder("promotionFinishedStatusStep", jobRepository)
+                .<Promotion, Promotion>chunk(10, transactionManager)
+                .reader(promotionReader.promotionItemReaderByEndDate(promotionJpaRepository))
+                .processor(promotionStatusProcessor)
+                .writer(promotionStatusWriter)
+                .build();
+    }
 
     @Bean
+    @Qualifier("cacheProductDetailStep")
     public Step cacheProductDetailStep() {
         return new StepBuilder("cacheProductDetailStep", jobRepository)
                 .<Promotion, List<CachingProductDto>>chunk(10, transactionManager)
@@ -65,6 +90,7 @@ public class ProductCacheJobConfig {
     }
 
     @Bean
+    @Qualifier("cacheProductStockStep")
     public Step cacheProductStockStep() {
         return new StepBuilder("cacheProductStockStep", jobRepository)
                 .<Promotion, List<Product>>chunk(10, transactionManager)

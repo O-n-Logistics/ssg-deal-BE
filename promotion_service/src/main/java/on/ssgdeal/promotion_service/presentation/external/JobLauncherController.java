@@ -31,6 +31,6 @@ public class JobLauncherController {
         JobExecution jobProductDetailExecution = jobLauncher.run(cacheProductDetailJob, jobProductDetailParameters);
         JobExecution jobProductStockExecution = jobLauncher.run(cacheProductStockJob, jobProductStockParameters);
         return "Job Product Detail Status: " + jobProductDetailExecution.getStatus()
-                + "Job Product Detail Status: " + jobProductStockExecution.getStatus();
+                + "Job Product Stock Status: " + jobProductStockExecution.getStatus();
     }
 }

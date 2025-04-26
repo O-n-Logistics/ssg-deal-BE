@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CacheProductDetailJobLauncher extends QuartzJobBean {
+public class PromotionFinishedStatusJobLauncher extends QuartzJobBean {
 
     private final JobLauncher jobLauncher;
-    private final Job cacheProductDetailJob;
+    private final Job promotionFinishedStatusJob;
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
@@ -26,10 +26,10 @@ public class CacheProductDetailJobLauncher extends QuartzJobBean {
                 .toJobParameters();
 
         try {
-            log.info("프로모션 상품 상세 배치 실행 시작");
-            jobLauncher.run(cacheProductDetailJob, jobParameters);
+            log.info("프로모션 종료 상태 업데이트 배치 실행 시작");
+            jobLauncher.run(promotionFinishedStatusJob, jobParameters);
         } catch (Exception e) {
-            throw new JobExecutionException("프로모션 상품 상세 배치 실행 실패", e);
+            throw new JobExecutionException("프로모션 종료 상태 업데이트 배치 실행 실패", e);
         }
     }
 }
