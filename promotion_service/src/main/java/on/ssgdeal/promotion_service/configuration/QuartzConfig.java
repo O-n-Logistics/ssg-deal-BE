@@ -4,6 +4,7 @@ import on.ssgdeal.promotion_service.infrastructure.batch.AutowiringSpringBeanJob
 import on.ssgdeal.promotion_service.infrastructure.batch.CacheProductDetailJobLauncher;
 import on.ssgdeal.promotion_service.infrastructure.batch.CacheProductStockJobLauncher;
 import org.quartz.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ public class QuartzConfig {
     }
 
     @Bean
+    @Qualifier("cacheProductDetailJobDetail")
     public JobDetail cacheProductDetailJobDetail() {
         return JobBuilder.newJob(CacheProductDetailJobLauncher.class)
                 .withIdentity("cacheProductDetailJob")
@@ -40,6 +42,7 @@ public class QuartzConfig {
     }
 
     @Bean
+    @Qualifier("cacheProductStockJobDetail")
     public JobDetail cacheProductStockJobDetail() {
         return JobBuilder.newJob(CacheProductStockJobLauncher.class)
                 .withIdentity("cacheProductStockJob")
@@ -48,6 +51,7 @@ public class QuartzConfig {
     }
 
     @Bean
+    @Qualifier("cacheProductDetailJobTrigger")
     public Trigger cacheProductDetailJobTrigger() {
 
         return TriggerBuilder.newTrigger()
@@ -60,6 +64,7 @@ public class QuartzConfig {
     }
 
     @Bean
+    @Qualifier("cacheProductStockJobTrigger")
     public Trigger cacheProductStockJobTrigger() {
 
         return TriggerBuilder.newTrigger()

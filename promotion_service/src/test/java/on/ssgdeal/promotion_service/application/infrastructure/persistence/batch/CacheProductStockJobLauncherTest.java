@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.promotion_service.configuration.QuartzConfig;
 import on.ssgdeal.promotion_service.domain.entity.Company;
 import on.ssgdeal.promotion_service.domain.entity.Product;
+import on.ssgdeal.promotion_service.domain.entity.ProductOption;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.entity.dto.CreateCompanyDto;
 import on.ssgdeal.promotion_service.domain.entity.dto.CreateProductDto;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("dev")
 @Import(QuartzConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class CacheProductDetailJobLauncherTest {
+public class CacheProductStockJobLauncherTest {
 
     @MockitoBean
     private AuditorAware<Long> auditorAware;
@@ -48,12 +49,12 @@ public class CacheProductDetailJobLauncherTest {
     private Scheduler scheduler;
 
     @Autowired
-    @Qualifier("cacheProductDetailJobDetail")
-    private JobDetail cacheProductDetailJobDetail;
+    @Qualifier("cacheProductStockJobDetail")
+    private JobDetail cacheProductStockJob;
 
     @Autowired
-    @Qualifier("cacheProductDetailJobTrigger")
-    private Trigger cacheProductDetailJobTrigger;
+    @Qualifier("cacheProductStockJobTrigger")
+    private Trigger cacheProductStockTrigger;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -62,9 +63,7 @@ public class CacheProductDetailJobLauncherTest {
     private PromotionRepository promotionRepository;
     @Autowired
     private ProductRepository productRepository;
-    private List<CreatePromotionDto> mockPromotionDtos;
-    private List<Promotion> mockPromotions;
-    private static final String PRODUCT_KEY_PATTERN = "promotion:product:%d:v%d";
+    private static final String PRODUCT_STOCK_KEY_PATTERN = "product:%d:option:%d";
     private final List<String> deleteKeys = new ArrayList<>();
     public List<CreatePromotionDto> createTestPromotions() {
         return List.of(
@@ -164,11 +163,11 @@ public class CacheProductDetailJobLauncherTest {
     @BeforeAll
     void setUp() {
         when(auditorAware.getCurrentAuditor()).thenReturn(Optional.of(1000L));
-        mockPromotionDtos = createTestPromotions();
+        List<CreatePromotionDto> mockPromotionDtos = createTestPromotions();
         List<Promotion> promotions = mockPromotionDtos.stream()
                 .map(Promotion::create)
                 .toList();
-        mockPromotions = promotionRepository.saveAll(promotions);
+        List<Promotion> mockPromotions = promotionRepository.saveAll(promotions);
 
         for (Promotion promotion : mockPromotions) {
             Company company = promotion.getCompany();
@@ -198,7 +197,7 @@ public class CacheProductDetailJobLauncherTest {
     }
 
     @Nested
-    @DisplayName("Describe: executeInternal 메서드는")
+    @DisplayName("Describe: CacheProductStockJobLauncher 의 executeInternal 메서드는")
     class executeInternalTest {
 
         @Nested
@@ -206,11 +205,11 @@ public class CacheProductDetailJobLauncherTest {
         class executeInternalCacheProductSuccessTest {
 
             @Test
-            @DisplayName("It: 상품 상세 정보를 캐싱한다.")
+            @DisplayName("It: 상품 재고 정보를 캐싱한다.")
             void executeInternalTest() throws Exception {
                 Trigger mockTrigger = TriggerBuilder.newTrigger()
-                        .forJob(cacheProductDetailJobDetail)
-                        .withIdentity("mockCacheProductDetailTrigger")
+                        .forJob(cacheProductStockJob)
+                        .withIdentity("mockCacheProductStockTrigger")
                         .startAt(DateBuilder.newDate().build())
                         .build();
 
@@ -221,12 +220,15 @@ public class CacheProductDetailJobLauncherTest {
                         .untilAsserted(() -> {
                             List<Promotion> promotions = promotionRepository.findAll();
                             for (Promotion promotion : promotions) {
-                                List<Product> products = productRepository.findByCompanyId(promotion.getCompany().getId());
+                                List<Product> products = productRepository.findByCompanyIdWithOptions(promotion.getCompany().getId());
                                 for (Product product : products) {
-                                    String key = String.format(PRODUCT_KEY_PATTERN, product.getId(), product.getVersion());
-                                    log.info("key: {}, hasKey: {}", key, redisTemplate.hasKey(key));
-                                    assertThat(redisTemplate.hasKey(key)).isTrue();
-                                    deleteKeys.add(key);
+                                    List<ProductOption> productOptions = product.getOptions();
+                                    for (ProductOption productOption : productOptions) {
+                                        String key = String.format(PRODUCT_STOCK_KEY_PATTERN, product.getId(), productOption.getId());
+                                        log.info("key: {}, hasKey: {}", key, redisTemplate.hasKey(key));
+                                        assertThat(redisTemplate.hasKey(key)).isTrue();
+                                        deleteKeys.add(key);
+                                    }
                                 }
                             }
                         });
