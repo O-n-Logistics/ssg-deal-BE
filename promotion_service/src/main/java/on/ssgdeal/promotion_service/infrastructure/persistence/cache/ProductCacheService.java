@@ -2,31 +2,212 @@ package on.ssgdeal.promotion_service.infrastructure.persistence.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import on.ssgdeal.common.application.dto.SliceDto;
 import on.ssgdeal.promotion_service.domain.entity.Product;
+import on.ssgdeal.promotion_service.domain.entity.Promotion;
 import on.ssgdeal.promotion_service.domain.repository.ProductRepository;
+import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
+import on.ssgdeal.promotion_service.exception.ProductException;
 import on.ssgdeal.promotion_service.exception.ProductException.ProductCacheSerializeFailedException;
 import on.ssgdeal.promotion_service.exception.ProductException.ProductNotFoundException;
 import on.ssgdeal.promotion_service.infrastructure.persistence.cache.dto.CachingProductDto;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j(topic = "ProductCacheService")
 @RequiredArgsConstructor
 public class ProductCacheService {
 
-    private static final String PRODUCT_KEY_PATTERN = "promotion:product:%d:v%d";
-    private static final String PRODUCT_KEYS_SCAN_PATTERN = "promotion:product:%d:v*";
+    public static final String FIND_PRODUCTS_BY_PROMOTION_PATTERN = "promotion:%d:all_products";
+    private static final String PRODUCT_KEY_PATTERN = "promotion:product:%d";
     private static final Duration CACHE_MARGIN = Duration.ofMinutes(10);
+    private static final String decreaseStockScript = """
+        local promotionStatus = redis.call('GET', KEYS[1])
+        if not promotionStatus or promotionStatus ~= 'IN_PROGRESS' then
+            return {err = "PROMOTION_NOT_IN_PROGRESS"}
+        end
+        
+        local currentStock = tonumber(redis.call('GET', KEYS[2]) or "0")
+        local decreaseAmount = tonumber(ARGV[1])
+        
+        if currentStock < decreaseAmount then
+            return {err = "INSUFFICIENT_STOCK"}
+        end
+        
+        local newStock = currentStock - decreaseAmount
+        redis.call('SET', KEYS[2], newStock)
+        
+        return {ok = newStock}
+        """;
 
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
     private final ProductRepository productRepository;
+    private final PromotionRepository promotionRepository;
+
+    private final Map<Class<?>, ObjectReader> readerCache = new ConcurrentHashMap<>();
+
+    @SuppressWarnings("unchecked")
+    public <T> Optional<T> getView(Long productId, Class<T> viewType) {
+        String key = PRODUCT_KEY_PATTERN.formatted(productId);
+        String json = redisTemplate.opsForValue().get(key);
+        if (json == null || json.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ObjectReader reader = readerCache.computeIfAbsent(
+            viewType,
+            objectMapper::readerFor
+        );
+
+        try {
+            return Optional.of(reader.readValue(json));
+        } catch (IOException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to parse JSON for key {}: {}", key, json);
+            }
+            return Optional.empty();
+        }
+    }
+
+    public <T> T getOrLoadView(Long productId, Class<T> viewType) {
+        return getView(productId, viewType).orElseGet(() -> {
+            Product product = productRepository
+                .findById(productId)
+                .orElseThrow(ProductNotFoundException::new);
+
+            try {
+                CachingProductDto dto = CachingProductDto.from(product);
+                String key = PRODUCT_KEY_PATTERN.formatted(dto.getProductId());
+
+                String json = objectMapper.writeValueAsString(dto);
+
+                long ttl = getTtl(productId); // 최소 60초
+
+                redisTemplate.opsForValue().set(key, json, Duration.ofSeconds(ttl));
+
+                ObjectReader reader = readerCache.computeIfAbsent(
+                    viewType,
+                    objectMapper::readerFor
+                );
+
+                return reader.readValue(json);
+            } catch (JsonProcessingException e) {
+                log.error("JSON processing failed for product ID: {}", productId, e);
+                throw new RuntimeException("Failed to process product data", e);
+            }
+        });
+    }
+
+    public <T> SliceDto<T> getAllByPromotionOrLoad(
+        Long promotionId,
+        Pageable pageable,
+        Class<T> viewType
+    ) {
+        String promotionProductsKey = String.format(FIND_PRODUCTS_BY_PROMOTION_PATTERN,
+            promotionId);
+
+        Boolean hasKey = redisTemplate.hasKey(promotionProductsKey);
+        List<T> dtos;
+
+        if (Boolean.TRUE.equals(hasKey)) {
+            Long total = redisTemplate.opsForList().size(promotionProductsKey);
+            if (total == null || total == 0) {
+                return SliceDto.from(new SliceImpl<>(List.of(), pageable, false));
+            }
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize() - 1, total.intValue() - 1);
+
+            if (start > end) {
+                return SliceDto.from(new SliceImpl<>(List.of(), pageable, false));
+            }
+
+            List<String> jsons = redisTemplate.opsForList().range(promotionProductsKey, start, end);
+            if (jsons == null || jsons.isEmpty()) {
+                return SliceDto.from(new SliceImpl<>(List.of(), pageable, false));
+            }
+
+            ObjectReader reader = readerCache.computeIfAbsent(viewType, objectMapper::readerFor);
+            dtos = jsons.stream()
+                .map(js -> {
+                    try {
+                        return (T) reader.readValue(js);
+                    } catch (IOException e) {
+                        log.warn("Failed to parse json: {}", js, e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+            boolean hasNext = end < total - 1;
+            return SliceDto.from(new SliceImpl<>(dtos, pageable, hasNext));
+        } else {
+            Promotion promotion = promotionRepository.findById(promotionId).orElseThrow(
+                ProductException.ProductPromotionIsNotInProgressException::new
+            );
+            Long companyId = promotion.getCompany().getId();
+
+            Slice<Product> productSlice = productRepository.findByCompanyId(companyId, pageable);
+            List<Product> products = productSlice.getContent();
+
+            ObjectReader reader = readerCache.computeIfAbsent(viewType, objectMapper::readerFor);
+            List<T> loaded = new ArrayList<>(products.size());
+
+            redisTemplate.execute(new SessionCallback<Void>() {
+                @Override
+                public Void execute(RedisOperations operations) throws DataAccessException {
+                    operations.multi();
+
+                    for (Product p : products) {
+                        try {
+                            CachingProductDto cacheDto = CachingProductDto.from(p);
+                            String json = objectMapper.writeValueAsString(cacheDto);
+
+                            String cacheKey = PRODUCT_KEY_PATTERN.formatted(p.getId());
+
+                            operations.opsForValue()
+                                .set(cacheKey, json, Duration.ofSeconds(getTtl(p.getId())));
+
+                            operations.opsForList().rightPush(promotionProductsKey, json);
+
+                            loaded.add(reader.readValue(json));
+                        } catch (IOException e) {
+                            log.warn("Failed serialize or parse for product {}", p.getId(), e);
+                        }
+                    }
+
+                    operations.expire(promotionProductsKey, Duration.ofHours(1));
+
+                    operations.exec();
+                    return null;
+                }
+            });
+
+            return SliceDto.from(new SliceImpl<>(loaded, pageable, productSlice.hasNext()));
+        }
+    }
 
     public void saveProductListCache(List<CachingProductDto> dtos) {
         for (CachingProductDto dto : dtos) {
@@ -35,13 +216,17 @@ public class ProductCacheService {
     }
 
     public void saveProductCache(CachingProductDto dto) {
+        log.info("save product: {}", dto);
+
         try {
             Long ttl = getTtl(dto.getProductId());
+            log.info("ttl: {}", ttl);
             if (ttl == 0L) {
                 return;
             }
             String json = objectMapper.writeValueAsString(dto);
-            String key = String.format(PRODUCT_KEY_PATTERN, dto.getProductId(), dto.getVersion());
+            String key = PRODUCT_KEY_PATTERN.formatted(dto.getProductId());
+            log.info("key and data: {}, {}", key, json);
             redisTemplate.opsForValue().set(key, json, Duration.ofSeconds(ttl));
         } catch (JsonProcessingException e) {
             throw new ProductCacheSerializeFailedException();
@@ -49,12 +234,8 @@ public class ProductCacheService {
     }
 
     public void evictProductCache(Long productId) {
-        String pattern = String.format(PRODUCT_KEYS_SCAN_PATTERN, productId);
-        Set<String> keys = redisTemplate.keys(pattern);
-
-        if (keys != null && !keys.isEmpty()) {
-            redisTemplate.delete(keys);
-        }
+        String key = PRODUCT_KEY_PATTERN.formatted(productId);
+        redisTemplate.delete(key);
     }
 
     public Long getTtl(Long productId) {
@@ -68,7 +249,7 @@ public class ProductCacheService {
 
         long days = ChronoUnit.DAYS.between(today, endDate);
         if (days <= 0) {
-            return 0L;
+            return 3600L;
         }
         return Duration.ofDays(days).plus(CACHE_MARGIN).getSeconds();
     }

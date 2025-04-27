@@ -34,6 +34,7 @@ import on.ssgdeal.promotion_service.domain.enums.StockOperation;
 import on.ssgdeal.promotion_service.domain.repository.ProductRepository;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import on.ssgdeal.promotion_service.exception.ProductException;
+import on.ssgdeal.promotion_service.exception.ProductException.ProductNotFoundException;
 import on.ssgdeal.promotion_service.exception.ProductException.ProductVersionConflictException;
 import on.ssgdeal.promotion_service.infrastructure.persistence.cache.ProductCacheManager;
 import on.ssgdeal.promotion_service.infrastructure.persistence.cache.dto.CachingProductDto;
@@ -80,17 +81,33 @@ public class ProductServiceImpl implements ProductService {
         return PageDto.from(products.map(SearchProductResponse::from));
     }
 
+    //    @Cacheable(value = "findByIdCache", key = "#p0")
     @Override
     public FindByIdResponse findById(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-            ProductException.ProductNotFoundException::new
-        );
+        return productCacheManager.getOrLoadView(productId, FindByIdResponse.class);
+    }
+
+    public FindByIdResponse findByIdNonCache(Long productId) {
         log.info("Find by id: {}", productId);
+        Product product = productRepository
+            .findById(productId)
+            .orElseThrow(ProductNotFoundException::new);
+
         return productApplicationMapper.toFindByIdResponse(product);
     }
 
     @Override
     public SliceDto<FindByPromotionIdResponse> findByPromotionId(
+        FindProductByPromotionIdRequestDto dto
+    ) {
+        log.info("Find by promotion id: {}", dto);
+        return productCacheManager.getAllByPromotionOrLoad(
+            dto.promotionId(),
+            dto.pageable(),
+            FindByPromotionIdResponse.class);
+    }
+
+    public SliceDto<FindByPromotionIdResponse> findByPromotionIdNonCache(
         FindProductByPromotionIdRequestDto dto
     ) {
         log.info("Find by promotion id: {}", dto);

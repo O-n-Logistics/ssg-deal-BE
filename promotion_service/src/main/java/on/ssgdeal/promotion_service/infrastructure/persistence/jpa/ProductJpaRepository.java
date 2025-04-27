@@ -16,6 +16,7 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.company.id = :companyId")
     Slice<Product> findSliceByCompanyId(@Param("companyId") Long companyId, Pageable pageable);
+
     @Query("SELECT p FROM Product p WHERE p.company.id = :companyId")
     Page<Product> findPageByCompanyId(@Param("companyId") Long companyId, Pageable pageable);
 
@@ -26,7 +27,9 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
         "JOIN FETCH p.company c " +
         "JOIN FETCH c.promotion promo " +
         "WHERE p.id = :id")
-    Optional<Product> findWithOptionsById(Long id);
+    Optional<Product> findWithOptionsById(
+        @Param("id") Long id
+    );
 
     @Query("SELECT p FROM Product p " +
         "JOIN FETCH p.options o " +
