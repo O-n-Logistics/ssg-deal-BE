@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.application.dto.SliceDto;
 import on.ssgdeal.promotion_service.domain.entity.Product;
 import on.ssgdeal.promotion_service.domain.entity.Promotion;
+import on.ssgdeal.promotion_service.domain.entity.ProductOption;
 import on.ssgdeal.promotion_service.domain.repository.ProductRepository;
 import on.ssgdeal.promotion_service.domain.repository.PromotionRepository;
 import on.ssgdeal.promotion_service.exception.ProductException;
@@ -38,6 +39,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProductCacheService {
 
+    private static final String PRODUCT_KEYS_SCAN_PATTERN = "promotion:product:%d:v*";
+    private static final String PRODUCT_STOCK_KEY_PATTERN = "product:%d:option:%d";
     public static final String FIND_PRODUCTS_BY_PROMOTION_PATTERN = "promotion:%d:all_products";
     private static final String PRODUCT_KEY_PATTERN = "promotion:product:%d";
     private static final Duration CACHE_MARGIN = Duration.ofMinutes(10);
@@ -209,6 +212,16 @@ public class ProductCacheService {
         }
     }
 
+    public void saveProductStockListCache(List<Product> products) {
+        for (Product product : products) {
+            Long ttl = getTtl(product.getId());
+            for (ProductOption option : product.getOptions()) {
+                String key = String.format(PRODUCT_STOCK_KEY_PATTERN, product.getId(), option.getId());
+                String value = String.valueOf(option.getProductStock().getValue());
+                redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttl));
+            }
+        }
+    }
     public void saveProductListCache(List<CachingProductDto> dtos) {
         for (CachingProductDto dto : dtos) {
             saveProductCache(dto);
@@ -216,17 +229,13 @@ public class ProductCacheService {
     }
 
     public void saveProductCache(CachingProductDto dto) {
-        log.info("save product: {}", dto);
-
         try {
             Long ttl = getTtl(dto.getProductId());
-            log.info("ttl: {}", ttl);
             if (ttl == 0L) {
                 return;
             }
             String json = objectMapper.writeValueAsString(dto);
             String key = PRODUCT_KEY_PATTERN.formatted(dto.getProductId());
-            log.info("key and data: {}, {}", key, json);
             redisTemplate.opsForValue().set(key, json, Duration.ofSeconds(ttl));
         } catch (JsonProcessingException e) {
             throw new ProductCacheSerializeFailedException();
@@ -253,5 +262,6 @@ public class ProductCacheService {
         }
         return Duration.ofDays(days).plus(CACHE_MARGIN).getSeconds();
     }
+
 
 }

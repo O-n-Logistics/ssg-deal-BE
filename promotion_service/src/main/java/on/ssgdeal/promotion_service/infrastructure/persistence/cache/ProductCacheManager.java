@@ -1,5 +1,6 @@
 package on.ssgdeal.promotion_service.infrastructure.persistence.cache;
 
+import on.ssgdeal.promotion_service.domain.entity.Product;
 import java.util.List;
 import java.util.Optional;
 import on.ssgdeal.common.application.dto.SliceDto;
@@ -39,5 +40,8 @@ public class ProductCacheManager {
     public <T> SliceDto<T> getAllByPromotionOrLoad(Long promotionId,
         Pageable pageable, Class<T> viewType) {
         return cacheService.getAllByPromotionOrLoad(promotionId, pageable, viewType);
+    }
+    public void saveStock(List<Product> products) {
+        cacheService.saveProductStockListCache(products);
     }
 }
