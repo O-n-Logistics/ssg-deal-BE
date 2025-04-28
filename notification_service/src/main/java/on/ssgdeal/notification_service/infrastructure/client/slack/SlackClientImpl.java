@@ -25,7 +25,7 @@ public class SlackClientImpl implements SlackClient {
      * 슬랙 이메일로 슬랙 유저 ID 조회
      */
     public String getSlackIdByEmail(String email) {
-        log.info("getSlackIdByEmail: {},", email);
+        log.debug("getSlackIdByEmail: {}", email.replaceAll("(?<=.{3}).(?=.*@)", "*"));
         JsonNode response = slackWebClient.get()
             .uri(uriBuilder -> uriBuilder
                 .path(LOOKUP_BY_SLACK_EMAIL_URL)
@@ -67,7 +67,9 @@ public class SlackClientImpl implements SlackClient {
      * 메시지 전송
      */
     public String sendNotificationToUser(String email, String content) {
-        log.info("sendNotificationToUser: {}, {}", email, content);
+        log.debug("sendNotificationToUser: {}, length of content: {}",
+            email.replaceAll("(?<=.{3}).(?=.*@)", "*"),
+            content != null ? content.length() : 0);
         try {
             String userId = getSlackIdByEmail(email);
             String channelId = getChannelIdByUserId(userId);
