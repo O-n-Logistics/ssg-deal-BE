@@ -14,8 +14,6 @@ public class PassportMdcContext implements AutoCloseable {
     }
 
     private void inject(String passportId) {
-        MDC.clear();
-
         Passport passport = passportUtil.getPassportBy(passportId);
 
         MDC.put(MdcKey.PASSPORT_ID.getKey(), passportId);
