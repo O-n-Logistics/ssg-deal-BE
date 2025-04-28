@@ -18,6 +18,9 @@ public class JpaAuditingConfig {
     public AuditorAware<Long> loginUserAuditorAware() {
         return () -> {
             String userId = MDC.get(MdcKey.USER_ID.getKey());
+            if (userId == null || userId.isEmpty()) {
+                return Optional.empty();
+            }
             return Optional.of(Long.parseLong(userId));
         };
     }

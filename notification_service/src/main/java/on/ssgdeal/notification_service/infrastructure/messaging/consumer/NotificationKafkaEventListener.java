@@ -34,9 +34,13 @@ public class NotificationKafkaEventListener {
     public void listenSuccessOrderEvent(
         @Payload String message,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) Integer key,
         Acknowledgment ack
-    ) {
-        log.info("메시지를 소비합니다. Topic : {}, message :{}", topic, message);
+    ) throws Exception {
+        log.info("메시지를 소비합니다. Topic : {}, Partition: {}, Offset: {}, Message key :{}",
+            topic, partition, offset, key);
         EventEnvelope<CreateNotificationEvent> envelope =
             EventEnvelope.fromJson(message, CreateNotificationEvent.class);
 
@@ -50,8 +54,8 @@ public class NotificationKafkaEventListener {
             log.error("재시도하지 않을 예외가 발생했습니다. => {}", nre.getMessage());
             throw nre;
         } catch (Exception e) {
-            log.error("재시도할 예외가 발생했습니다. => {}", e.getMessage());
-            throw new RuntimeException(e);
+            log.error("재시도할 예외가 발생했습니다.", e);
+            throw e;
         }
     }
 
@@ -60,7 +64,7 @@ public class NotificationKafkaEventListener {
             notificationService.sendNotification(payload.toDto(), NotificationChannelType.SLACK);
             ack.acknowledge();
         } catch (Exception e) {
-            log.error("메시지 소비에 실패했습니다. => {}", e.getMessage());
+            log.error("메시지 소비에 실패했습니다.", e);
             throw e;
         }
     }
