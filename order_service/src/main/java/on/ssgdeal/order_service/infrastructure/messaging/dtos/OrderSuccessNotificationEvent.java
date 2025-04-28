@@ -1,5 +1,6 @@
 package on.ssgdeal.order_service.infrastructure.messaging.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import on.ssgdeal.common.messaging.core.EventPayload;
 import on.ssgdeal.order_service.application.dto.LoginUserInfoDto;
@@ -11,6 +12,7 @@ public record OrderSuccessNotificationEvent(
     Long totalOrderId,
     String slackEmail,
     String ordererName,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     LocalDate orderAt,
     Long paymentPrice,
     String orderStatus

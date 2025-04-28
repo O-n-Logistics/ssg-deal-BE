@@ -327,7 +327,6 @@ public class OrderServiceImpl implements OrderService {
             )
             .toList();
     }
-
     protected List<IncreaseStockEvent> toIncreaseStockEventDto(TotalOrder totalOrder) {
         return totalOrder.getOrders().stream().flatMap(
                 order -> order.getOrderProducts().stream().map(
@@ -335,6 +334,7 @@ public class OrderServiceImpl implements OrderService {
                         product.getOptionId(), product.getQuantity().getValue())
                 )
             )
+            .distinct()
             .toList();
     }
 
