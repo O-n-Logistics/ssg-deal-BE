@@ -18,6 +18,13 @@ public record EventEnvelope<T extends EventPayload>(
     String timestamp
 ) {
 
+    private static final ObjectMapper OBJECT_MAPPER;
+
+    static {
+        OBJECT_MAPPER = new ObjectMapper();
+        OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    }
+
     public static <T extends EventPayload> EventEnvelope<T> wrap(
         String topic, String passportId, T payload, String timestamp
     ) {
@@ -31,9 +38,8 @@ public record EventEnvelope<T extends EventPayload>(
     }
 
     public String toJson() {
-        ObjectMapper objectMapper = getObjectMapper();
         try {
-            return objectMapper.writeValueAsString(this);
+            return OBJECT_MAPPER.writeValueAsString(this);
         } catch (JsonProcessingException e) {
             log.error("EventEnvelope 의 직렬화를 실패했습니다. => {}", e.getMessage());
             throw new EventSerializeException();
@@ -41,26 +47,19 @@ public record EventEnvelope<T extends EventPayload>(
     }
 
     public static <T extends EventPayload> EventEnvelope<T> fromJson(String json, Class<T> tClass) {
-        ObjectMapper mapper = getObjectMapper();
         try {
-            JsonNode jsonNode = mapper.readTree(json);
+            JsonNode jsonNode = OBJECT_MAPPER.readTree(json);
             log.info("Envelope Json 역직렬화 시작 - jsonNode: {}", jsonNode);
 
             String topic = jsonNode.get("topic").asText();
             String timestamp = jsonNode.get("timestamp").asText();
             String passportId = jsonNode.get("passportId").asText();
-            T payload = mapper.treeToValue(jsonNode.get("payload"), tClass);
+            T payload = OBJECT_MAPPER.treeToValue(jsonNode.get("payload"), tClass);
 
             return EventEnvelope.wrap(topic, passportId, payload, timestamp);
         } catch (Exception e) {
             log.error("Envelope JSON 역직렬화 실패", e);
             throw new EventDeserializeException();
         }
-    }
-
-    private static ObjectMapper getObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        return mapper;
     }
 }
