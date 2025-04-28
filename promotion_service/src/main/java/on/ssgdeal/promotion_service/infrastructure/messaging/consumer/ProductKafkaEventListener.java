@@ -34,7 +34,7 @@ public class ProductKafkaEventListener {
         @Payload String message,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         Acknowledgment ack
-    ) {
+    ) throws Exception {
         log.info("메시지를 소비합니다. Topic : {}, message :{}", topic, message);
         EventEnvelope<IncreaseStockEvent> envelope =
             EventEnvelope.fromJson(message, IncreaseStockEvent.class);
@@ -50,7 +50,7 @@ public class ProductKafkaEventListener {
             throw nre;
         } catch (Exception e) {
             log.error("재시도할 예외가 발생했습니다. => {}", e.getMessage());
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
