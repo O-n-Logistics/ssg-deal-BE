@@ -50,7 +50,7 @@ public class NotificationKafkaEventListener {
             log.error("재시도하지 않을 예외가 발생했습니다. => {}", nre.getMessage());
             throw nre;
         } catch (Exception e) {
-            log.error("재시도할 예외가 발생했습니다. => {}", e.getMessage());
+            log.error("재시도할 예외가 발생했습니다.", e);
             throw new RuntimeException(e);
         }
     }
@@ -60,7 +60,7 @@ public class NotificationKafkaEventListener {
             notificationService.sendNotification(payload.toDto(), NotificationChannelType.SLACK);
             ack.acknowledge();
         } catch (Exception e) {
-            log.error("메시지 소비에 실패했습니다. => {}", e.getMessage());
+            log.error("메시지 소비에 실패했습니다.", e);
             throw e;
         }
     }
