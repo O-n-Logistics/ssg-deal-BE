@@ -44,3 +44,22 @@ management:
 logging:
   pattern:
     level: "%5p [%X{traceId:-},%X{spanId:-}]"
+
+quartz:
+  job-store-type: jdbc
+  jdbc:
+    initialize-schema: always
+  properties:
+    org:
+      quartz:
+        scheduler:
+          instanceName: QuartzScheduler
+          instanceId: AUTO
+        jobStore:
+          class: org.quartz.impl.jdbcjobstore.JobStoreTX
+          driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+          tablePrefix: QRTZ_
+          isClustered: false
+        threadPool:
+          threadCount: 5
+          schedular-startup-delay: 0

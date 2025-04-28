@@ -64,4 +64,10 @@ public class ProductException extends CustomException {
         }
     }
 
+    public static class ProductEvictScheduleRegistrationFailedException extends ProductException {
+
+        public ProductEvictScheduleRegistrationFailedException() {
+            super(ProductExceptionCode.PRODUCT_EVICT_SCHEDULE_REGISTRATION_FAILED);
+        }
+    }
 }
