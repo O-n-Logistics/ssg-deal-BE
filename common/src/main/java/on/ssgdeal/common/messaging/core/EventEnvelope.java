@@ -47,9 +47,9 @@ public record EventEnvelope<T extends EventPayload>(
     }
 
     public static <T extends EventPayload> EventEnvelope<T> fromJson(String json, Class<T> tClass) {
+        log.debug("Envelope Json 역직렬화 시작");
         try {
             JsonNode jsonNode = OBJECT_MAPPER.readTree(json);
-            log.info("Envelope Json 역직렬화 시작 - jsonNode: {}", jsonNode);
 
             String topic = jsonNode.get("topic").asText();
             String timestamp = jsonNode.get("timestamp").asText();
@@ -57,6 +57,12 @@ public record EventEnvelope<T extends EventPayload>(
             T payload = OBJECT_MAPPER.treeToValue(jsonNode.get("payload"), tClass);
 
             return EventEnvelope.wrap(topic, passportId, payload, timestamp);
+        } catch (JsonProcessingException e) {
+            log.error("JSON 처리 오류: Envelope JSON 역직렬화 실패", e);
+            throw new EventDeserializeException();
+        } catch (NullPointerException e) {
+            log.error("필드 누락 오류: Envelope JSON 역직렬화 실패", e);
+            throw new EventDeserializeException();
         } catch (Exception e) {
             log.error("Envelope JSON 역직렬화 실패", e);
             throw new EventDeserializeException();
