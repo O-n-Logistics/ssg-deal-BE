@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import on.ssgdeal.common.auth.passport.PassportUtil;
 import on.ssgdeal.common.mdc.PassportMdcContext;
 import org.springframework.stereotype.Component;
@@ -13,9 +14,41 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j(topic = "PassportFilter")
 public class PassportFilter extends OncePerRequestFilter {
 
     private final PassportUtil passportUtil;
+
+    private static boolean isInternalFindUserRequest(String uri, String method) {
+        return uri.contains("/internal")
+            && uri.contains("/users")
+            && method.equals("GET");
+    }
+
+    private static boolean isCreateUserRequest(String uri, String method) {
+        return uri.contains("/internal")
+            && uri.contains("/users")
+            && method.equals("POST");
+    }
+
+    private static boolean isValidateRequest(String uri, String method) {
+        return uri.contains("/internal")
+            && uri.contains("/auth")
+            && uri.contains("/validate")
+            && method.equals("GET");
+    }
+
+    private static boolean isSignupAuthRequest(String uri, String method) {
+        return uri.contains("/api")
+            && uri.contains("/auth/signup")
+            && method.equals("POST");
+    }
+
+    private static boolean isLoginAuthRequest(String uri, String method) {
+        return uri.contains("/api")
+            && uri.contains("/auth/login")
+            && method.equals("POST");
+    }
 
     @Override
     protected boolean shouldNotFilter(
@@ -24,9 +57,13 @@ public class PassportFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
+        log.debug("uri, method: {}, {}", uri, method);
+
         return isCreateUserRequest(uri, method)
             || isSignupAuthRequest(uri, method)
-            || isLoginAuthRequest(uri, method);
+            || isLoginAuthRequest(uri, method)
+            || isInternalFindUserRequest(uri, method)
+            || isValidateRequest(uri, method);
     }
 
     @Override
@@ -44,23 +81,5 @@ public class PassportFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             throw new ServletException("Passport Filter processing failed - " + e.getMessage(), e);
         }
-    }
-
-    private static boolean isCreateUserRequest(String uri, String method) {
-        return uri.contains("/internal")
-            && uri.contains("/users")
-            && method.equals("POST");
-    }
-
-    private static boolean isSignupAuthRequest(String uri, String method) {
-        return uri.contains("/api")
-            && uri.contains("/auth/signup")
-            && method.equals("POST");
-    }
-
-    private static boolean isLoginAuthRequest(String uri, String method) {
-        return uri.contains("/api")
-            && uri.contains("/auth/login")
-            && method.equals("POST");
     }
 }
