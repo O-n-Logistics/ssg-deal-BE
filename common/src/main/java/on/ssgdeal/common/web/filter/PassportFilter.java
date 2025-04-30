@@ -57,7 +57,7 @@ public class PassportFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        log.info("uri, method: {}, {}", uri, method);
+        log.debug("uri, method: {}, {}", uri, method);
 
         return isCreateUserRequest(uri, method)
             || isSignupAuthRequest(uri, method)
