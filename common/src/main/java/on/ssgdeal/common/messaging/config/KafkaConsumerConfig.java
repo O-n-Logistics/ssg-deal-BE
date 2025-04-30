@@ -4,15 +4,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import on.ssgdeal.common.messaging.exception.NonRecoverableException;
-import on.ssgdeal.common.messaging.producer.KafkaOutboxProducer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.CooperativeStickyAssignor;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -23,11 +20,14 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 
 @Configuration
-@EnableKafka
 public class KafkaConsumerConfig {
+
+    public static final String DLT_SUFFIX = ".dlt";
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
@@ -44,7 +44,7 @@ public class KafkaConsumerConfig {
         configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
         // 컨슈머 그룹 내 여러 컨슈머의 메시지 중복 처리를 방지
-        configs.put(ConsumerConfig.GROUP_ID_CONFIG, "on-ssgdeal-group");
+        configs.put(ConsumerConfig.GROUP_ID_CONFIG, "ssgdeal-group-" + applicationName);
 
         // key 역직렬화
         configs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -64,7 +64,7 @@ public class KafkaConsumerConfig {
         // 리밸런싱 발생 시 컨슈머의 파티션 재분배 전략
         // CooperativeStickyAssignor => 컨슈머들은 기존 파티션을 최대한 유지
         configs.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,
-            CooperativeStickyAssignor.class);
+            "org.apache.kafka.clients.consumer.CooperativeStickyAssignor");
 
         // 세션 타임아웃 (Default)
         configs.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 45000);
@@ -106,7 +106,7 @@ public class KafkaConsumerConfig {
         // DLQ 정책 및 재시도 정책 적용
         factory.setCommonErrorHandler(defaultErrorHandler);
         // 컨테이너 동시성 설정
-        factory.setConcurrency(Runtime.getRuntime().availableProcessors());
+        factory.setConcurrency(1);
 
         return factory;
     }
@@ -138,7 +138,7 @@ public class KafkaConsumerConfig {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
             kafkaTemplate,
             // 기존 파티션과 DLQ 파티션의 차이가 존재할 수 있으므로 파티션 0 고정
-            (cr, ex) -> new TopicPartition(cr.topic() + KafkaOutboxProducer.DLT_SUFFIX, 0)
+            (cr, ex) -> new TopicPartition(cr.topic() + DLT_SUFFIX, 0)
         );
         recoverer.setHeadersFunction((record, ex) -> {
             record.headers().add(

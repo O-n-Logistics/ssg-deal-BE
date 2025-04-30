@@ -35,7 +35,6 @@ import on.ssgdeal.order_service.exception.OrderException.OrderNotCancelException
 import on.ssgdeal.order_service.exception.OrderException.OrderNotFoundTotalOrderException;
 import on.ssgdeal.order_service.exception.OrderException.OrderNotOrdererException;
 import on.ssgdeal.order_service.exception.OrderException.OrderPaymentsError;
-import on.ssgdeal.order_service.exception.OrderException.OrderValidDestination;
 import on.ssgdeal.order_service.infrastructure.client.cart.feign.dtos.ClearCartRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.payment.feign.dtos.CancelOrderPaymentRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.payment.feign.dtos.CancelTotalOrderPaymentRequestDto;
@@ -44,12 +43,10 @@ import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.Decre
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.GetProductInfoDto;
 import on.ssgdeal.order_service.infrastructure.client.promotion.feign.dtos.InCreaseProductStockRequestDto;
 import on.ssgdeal.order_service.infrastructure.client.slack.dtos.TotalOrderCompleteSendInfoDto;
-import on.ssgdeal.order_service.infrastructure.client.slack.feign.dtos.OrderCompleteSendSlackRequestDto;
-import on.ssgdeal.order_service.infrastructure.client.user.feign.dtos.ValidDestinationRequestDto;
-import on.ssgdeal.order_service.infrastructure.client.user.feign.dtos.ValidDestinationResponseDto;
+import on.ssgdeal.order_service.infrastructure.messaging.dtos.IncreaseStockEvent;
+import on.ssgdeal.order_service.infrastructure.messaging.dtos.OrderSuccessNotificationEvent;
 import on.ssgdeal.order_service.presentation.external.dto.CreateOrderResponse;
 import on.ssgdeal.order_service.presentation.internal.dto.ValidTotalOrderResponse;
-import on.ssgdeal.order_service.util.OrderNumberGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -69,7 +66,6 @@ public class OrderServiceImpl implements OrderService {
     private final SlackService slackService;
     private final PaymentService paymentService;
     private final CartService cartService;
-    private final OrderNumberGenerator orderNumberGenerator;
     private final OrderCommandFactory orderCommandFactory;
     private final ScopedCommandInvoker commandInvoker;
 
@@ -104,7 +100,8 @@ public class OrderServiceImpl implements OrderService {
         totalOrderRepository.paymentSuccess(totalOrder, updateTotalOrderSuccessDto);
         TotalOrder updatedTotalOrder = getTotalOrderElseThrow(totalOrder.getId());
         sendSlackMessage(loginUserInfo, updatedTotalOrder.getCreatedAt().toLocalDate(),
-            updatedTotalOrder.getPrice().getValue(), updateTotalOrderSuccessDto);
+            updatedTotalOrder.getPrice().getValue(), updateTotalOrderSuccessDto,
+            updatedTotalOrder.getId());
         clearCart(updatedTotalOrder);
     }
 
@@ -243,17 +240,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void requestCancelTotalOrderIncreaseProduct(TotalOrder totalOrder) {
-        List<InCreaseProductStockRequestDto> inCreaseProductStockRequestDtos = cancelIncreaseRequest(
-            totalOrder);
-        for (InCreaseProductStockRequestDto dto : inCreaseProductStockRequestDtos) {
-            try {
-                log.info("재고 증가 요청");
-                promotionService.increaseProductStock(dto);
-            } catch (Exception e) {
-                log.error("재고 증가 요청 실패 : {} ", e.getMessage());
-                log.error("재고 증가 요청 실패 상품 : {} ", dto.toString());
-            }
-        }
+        log.info("재고 증가 요청");
+        List<IncreaseStockEvent> payloadList = toIncreaseStockEventDto(totalOrder);
+        promotionService.publishIncreaseProductStockMessage(totalOrder.getId(), payloadList);
     }
 
     private void requestCancelTotalOrderPayment(TotalOrder totalOrder) {
@@ -273,39 +262,22 @@ public class OrderServiceImpl implements OrderService {
         LoginUserInfoDto loginUserInfo,
         LocalDate orderAt,
         Long paymentPrice,
-        UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto
+        UpdateTotalOrderSuccessDto updateTotalOrderSuccessDto,
+        Long totalOrderId
     ) {
-        TotalOrderCompleteSendInfoDto totalOrderCompleteSendInfoDto = TotalOrderCompleteSendInfoDto.from(
-            orderAt, paymentPrice);
-        OrderCompleteSendSlackRequestDto sendSlackRequestDto = OrderCompleteSendSlackRequestDto.from(
+        TotalOrderCompleteSendInfoDto totalOrderCompleteSendInfoDto =
+            TotalOrderCompleteSendInfoDto.from(orderAt, paymentPrice);
+        OrderSuccessNotificationEvent payload = OrderSuccessNotificationEvent.from(
             updateTotalOrderSuccessDto,
-            totalOrderCompleteSendInfoDto, loginUserInfo);
-        try {
-            log.info("주문 성공 메시지 전달 요청");
-            slackService.sendOrderCompleteMessage(sendSlackRequestDto);
-        } catch (Exception e) {
-            log.warn("슬랙 메시지 전송 실패: {}", e.getMessage());
-        }
+            totalOrderCompleteSendInfoDto,
+            loginUserInfo
+        );
+        slackService.publishCompletedOrderSlackMessage(totalOrderId, payload);
     }
 
     private TotalOrder getTotalOrderElseThrow(Long paymentId) {
         return totalOrderRepository.findById(paymentId)
             .orElseThrow(OrderNotFoundTotalOrderException::new);
-    }
-
-    protected ValidDestinationResponseDto validDestinationRequestDto(Long destinationId) {
-        ValidDestinationRequestDto validDestinationRequest = ValidDestinationRequestDto.from(
-            destinationId);
-        try {
-            log.info("배송지 검증 요청: {}", validDestinationRequest.destinationId());
-            var validDestinationResponseDto = userService.validDestinationRequest(
-                validDestinationRequest);
-            log.info("배송지 검증 완료");
-            return validDestinationResponseDto;
-        } catch (Exception e) {
-            log.info("배송지 검증 실패: {}", e.getMessage());
-            throw new OrderValidDestination();
-        }
     }
 
     protected void productStockRequest(GetProductInfoDto productInfo) {
@@ -353,6 +325,16 @@ public class OrderServiceImpl implements OrderService {
                         product.getOptionId(), product.getQuantity().getValue())
                 )
             )
+            .toList();
+    }
+    protected List<IncreaseStockEvent> toIncreaseStockEventDto(TotalOrder totalOrder) {
+        return totalOrder.getOrders().stream().flatMap(
+                order -> order.getOrderProducts().stream().map(
+                    product -> IncreaseStockEvent.from(product.getProductId(),
+                        product.getOptionId(), product.getQuantity().getValue())
+                )
+            )
+            .distinct()
             .toList();
     }
 

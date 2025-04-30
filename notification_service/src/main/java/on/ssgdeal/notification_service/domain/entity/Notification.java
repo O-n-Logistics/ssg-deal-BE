@@ -3,7 +3,6 @@ package on.ssgdeal.notification_service.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import on.ssgdeal.common.jpa.BaseEntity;
-import on.ssgdeal.notification_service.application.service.dto.CreateNotificationRequestDto;
 import on.ssgdeal.notification_service.domain.entity.dto.CreateNotificationDto;
 import on.ssgdeal.notification_service.domain.enums.NotificationStatus;
 import on.ssgdeal.notification_service.domain.enums.NotificationTemplateType;
@@ -48,15 +47,13 @@ public class Notification extends BaseEntity {
     @Column(name = "status", nullable = false)
     private NotificationStatus status;
 
-    @Column(name = "send_at", nullable = false)
+    @Column(name = "send_at")
     private LocalDateTime sendAt;
 
-    @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NotificationRecord> records;
 
-    public static Notification create(
-            CreateNotificationDto notificationDto
-    ) {
+    public static Notification createSuccess(CreateNotificationDto notificationDto) {
         Notification notification = Notification.builder()
                 .notificationTemplate(notificationDto.template())
                 .type(notificationDto.template().getType())
@@ -67,8 +64,22 @@ public class Notification extends BaseEntity {
                 .status(NotificationStatus.SUCCESS)
                 .records(new ArrayList<>())
                 .build();
-
         notification.addNotificationRecord(NotificationStatus.SUCCESS);
+        return notification;
+    }
+
+    public static Notification createFailure(CreateNotificationDto notificationDto) {
+        Notification notification = Notification.builder()
+                .notificationTemplate(notificationDto.template())
+                .type(notificationDto.template().getType())
+                .content(notificationDto.content())
+                .senderSlackEmail(new SlackEmail(notificationDto.requestDto().senderSlackEmail()))
+                .receiverSlackEmail(new SlackEmail(notificationDto.requestDto().receiverSlackEmail()))
+                .sendAt(notificationDto.sendAt())
+                .status(NotificationStatus.FAILED)
+                .records(new ArrayList<>())
+                .build();
+        notification.addNotificationRecord(NotificationStatus.FAILED);
         return notification;
     }
 
