@@ -50,6 +50,17 @@ public class PassportFilter extends OncePerRequestFilter {
             && method.equals("POST");
     }
 
+    private static boolean isGetProductRequest(String uri, String method) {
+        return uri.contains("/api")
+            && uri.contains("/products")
+            && method.equals("GET");
+    }
+
+    private static boolean isControlStockRequest(String uri, String method) {
+        return uri.contains("/internal")
+            && uri.contains("/stocks");
+    }
+
     @Override
     protected boolean shouldNotFilter(
         HttpServletRequest request
@@ -63,7 +74,9 @@ public class PassportFilter extends OncePerRequestFilter {
             || isSignupAuthRequest(uri, method)
             || isLoginAuthRequest(uri, method)
             || isInternalFindUserRequest(uri, method)
-            || isValidateRequest(uri, method);
+            || isValidateRequest(uri, method)
+            || isGetProductRequest(uri, method)
+            || isControlStockRequest(uri, method);
     }
 
     @Override

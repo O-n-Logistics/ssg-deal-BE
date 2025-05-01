@@ -1,5 +1,6 @@
 package on.ssgdeal.promotion_service.application.service;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ import on.ssgdeal.promotion_service.presentation.internal.dto.product.GetProduct
 import on.ssgdeal.promotion_service.presentation.internal.dto.product.GetProductOptionsResponse;
 import on.ssgdeal.promotion_service.presentation.internal.dto.product.IncreaseStockResponse;
 import on.ssgdeal.promotion_service.presentation.internal.dto.product.ValidateStockDecreasesResponse;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,6 +68,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
     private final ProductCacheManager productCacheManager;
+    private final MeterRegistry meterRegistry;
 
     private final StockService stockService;
     private final ProductApplicationMapper productApplicationMapper;
@@ -81,13 +84,22 @@ public class ProductServiceImpl implements ProductService {
         return PageDto.from(products.map(SearchProductResponse::from));
     }
 
-    //    @Cacheable(value = "findByIdCache", key = "#p0")
+    @Cacheable(value = "findByIdCache", key = "#p0")
     @Override
     public FindByIdResponse findById(Long productId) {
+        meterRegistry.counter("promotion.product.find.count").increment();
         return productCacheManager.getOrLoadView(productId, FindByIdResponse.class);
     }
 
+    @Override
+    public FindByIdResponse findByIdCache(Long productId) {
+        meterRegistry.counter("promotion.product.find.count").increment();
+        return productCacheManager.getOrLoadView(productId, FindByIdResponse.class);
+    }
+
+    @Override
     public FindByIdResponse findByIdNonCache(Long productId) {
+        meterRegistry.counter("promotion.product.find.count").increment();
         log.info("Find by id: {}", productId);
         Product product = productRepository
             .findById(productId)
@@ -107,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
             FindByPromotionIdResponse.class);
     }
 
+    @Override
     public SliceDto<FindByPromotionIdResponse> findByPromotionIdNonCache(
         FindProductByPromotionIdRequestDto dto
     ) {
@@ -125,7 +138,6 @@ public class ProductServiceImpl implements ProductService {
         return SliceDto.from(responses);
     }
 
-    // TODO : 상품 랭킹 조회 구현 2차
     @Override
     public GetProductRankingResponse getProductRanking() {
         List<ProductRanking> productRankings = null;

@@ -30,7 +30,14 @@ public interface ProductService {
 
     FindByIdResponse findById(Long productId);
 
+    FindByIdResponse findByIdCache(Long productId);
+
+    FindByIdResponse findByIdNonCache(Long productId);
+
     SliceDto<FindByPromotionIdResponse> findByPromotionId(FindProductByPromotionIdRequestDto dto);
+
+    SliceDto<FindByPromotionIdResponse> findByPromotionIdNonCache(
+        FindProductByPromotionIdRequestDto dto);
 
     GetProductRankingResponse getProductRanking();
 

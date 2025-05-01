@@ -1,5 +1,6 @@
 package on.ssgdeal.auth_service.configuration;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import on.ssgdeal.auth_service.application.service.PassportService;
 import on.ssgdeal.auth_service.infrastructure.security.cookie.CookieUtil;
@@ -30,6 +31,7 @@ public class SecurityConfig {
     private final AuthDetailsServiceImpl authDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final PassportService passportService;
+    private final MeterRegistry meterRegistry;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -50,6 +52,7 @@ public class SecurityConfig {
             .cookieUtil(cookieUtil)
             .authenticationManager(authenticationConfiguration.getAuthenticationManager())
             .passportService(passportService)
+            .meterRegistry(meterRegistry)
             .build();
     }
 

@@ -1,5 +1,6 @@
 package on.ssgdeal.order_service.application.service;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +69,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final OrderCommandFactory orderCommandFactory;
     private final ScopedCommandInvoker commandInvoker;
+    private final MeterRegistry meterRegistry;
 
     @Override
     @Transactional
@@ -80,9 +82,11 @@ public class OrderServiceImpl implements OrderService {
                 loginUserInfoDto);
             TotalOrder totalOrder = commandInvoker.executeCommand(command);
             log.info("주문 생성 성공 : {}", totalOrder.getId());
+            meterRegistry.counter("order.success.count").increment();
             return CreateOrderResponse.from(totalOrder);
         } catch (Exception e) {
             log.info("주문 생성 실패 : {}", e.getMessage());
+            meterRegistry.counter("order.fail.count").increment();
             throw new OrderCreateException();
         }
     }
@@ -327,6 +331,7 @@ public class OrderServiceImpl implements OrderService {
             )
             .toList();
     }
+
     protected List<IncreaseStockEvent> toIncreaseStockEventDto(TotalOrder totalOrder) {
         return totalOrder.getOrders().stream().flatMap(
                 order -> order.getOrderProducts().stream().map(

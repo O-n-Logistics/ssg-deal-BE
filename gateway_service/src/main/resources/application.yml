@@ -21,9 +21,18 @@ spring:
         signup:
           endpoint: /api/v1/auth/signup
         base:
-          url: http://auth-service:8082
+          url: http://172.31.13.57:8082
         validate:
           endpoint: /internal/v1/auth/validate
+      promotion:
+        product:
+          get:
+            by:
+              id:
+                endpoint: /api/v1/promotions/all/products/
+              promo:
+                endpoint1: /api/v1/promotions/
+                endpoint2: /products
       routes:
         - id: auth-service # 인증 서비스
           uri: lb://auth-service

@@ -1,6 +1,7 @@
 package on.ssgdeal.auth_service.infrastructure.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,19 +29,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final PassportService passportService;
+    private final MeterRegistry meterRegistry;
 
     @Builder
     public JwtAuthenticationFilter(
         AuthenticationManager authenticationManager,
         JwtUtil jwtUtil,
         CookieUtil cookieUtil,
-        PassportService passportService
+        PassportService passportService,
+        MeterRegistry meterRegistry
     ) {
         setAuthenticationManager(authenticationManager);
         setFilterProcessesUrl("/api/v1/auth/login");
         this.jwtUtil = jwtUtil;
         this.cookieUtil = cookieUtil;
         this.passportService = passportService;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -80,6 +84,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Authentication auth
     ) throws IOException {
         log.info("successfulAuthentication, {}", auth.getName());
+        meterRegistry.counter("auth.success.login").increment();
 
         AuthDetailsImpl authDetails = (AuthDetailsImpl) auth.getPrincipal();
         String username = authDetails.getUsername();
@@ -108,6 +113,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         HttpServletResponse response,
         AuthenticationException failed
     ) throws IOException {
+        meterRegistry.counter("auth.fail.login").increment();
+
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
 

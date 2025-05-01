@@ -66,6 +66,8 @@ dependencies {
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+    // cloud watch
+    implementation 'io.micrometer:micrometer-registry-cloudwatch2'
 }
 
 test {

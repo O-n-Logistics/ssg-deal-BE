@@ -24,6 +24,12 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     private String loginUrl;
     @Value("${spring.cloud.gateway.auth.signup.endpoint}")
     private String signupUrl;
+    @Value("${spring.cloud.gateway.promotion.product.get.by.id.endpoint}")
+    private String productGetByIdUrl;
+    @Value("${spring.cloud.gateway.promotion.product.get.by.promo.endpoint1}")
+    private String productGetByPromoUrl1;
+    @Value("${spring.cloud.gateway.promotion.product.get.by.promo.endpoint2}")
+    private String productGetByPromoUrl2;
     @Value("${spring.cloud.gateway.auth.validate.endpoint}")
     private String validateEndpoint;
 
@@ -47,7 +53,10 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         log.info("Auth Requested path: {}", path);
 
         if (
-            path.equals(loginUrl) || path.equals(signupUrl)
+            path.equals(loginUrl)
+                || path.equals(signupUrl)
+                || path.contains(productGetByIdUrl)
+                || (path.contains(productGetByPromoUrl1) && path.contains(productGetByPromoUrl2))
         ) {
             return chain.filter(exchange);
         }

@@ -54,7 +54,42 @@ public class ProductController {
         @PathVariable(name = "productId") Long productId
     ) {
         log.info("Find product by id {}", productId);
+        long start = System.currentTimeMillis();
+
         FindByIdResponse response = productService.findById(productId);
+
+        long end = System.currentTimeMillis();
+        log.info("findById({}) execution time: {} ms", productId, (end - start));
+
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @GetMapping("/all/products/{productId}/cache")
+    public ResponseEntity<CommonResponse<FindByIdResponse>> findByIdCache(
+        @PathVariable(name = "productId") Long productId
+    ) {
+        log.info("Find product by id {}", productId);
+        long start = System.currentTimeMillis();
+
+        FindByIdResponse response = productService.findByIdCache(productId);
+
+        long end = System.currentTimeMillis();
+        log.info("findByIdCache({}) execution time: {} ms", productId, (end - start));
+
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @GetMapping("/all/products/{productId}/non_cache")
+    public ResponseEntity<CommonResponse<FindByIdResponse>> findByIdNonCache(
+        @PathVariable(name = "productId") Long productId
+    ) {
+        log.info("Find product by id {}", productId);
+        long start = System.currentTimeMillis();
+
+        FindByIdResponse response = productService.findByIdNonCache(productId);
+
+        long end = System.currentTimeMillis();
+        log.info("findByIdNonCache({}) execution time: {} ms", productId, (end - start));
 
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -65,12 +100,39 @@ public class ProductController {
         @PageableDefault Pageable pageable
     ) {
         log.info("Find product by promotion id {}, {}", promotionId, pageable);
+        long start = System.currentTimeMillis();
+
         FindProductByPromotionIdRequestDto dto = FindProductByPromotionIdRequestDto.from(
             promotionId,
             pageable
         );
 
         SliceDto<FindByPromotionIdResponse> response = productService.findByPromotionId(dto);
+
+        long end = System.currentTimeMillis();
+        log.info("findByPromotionId({}) execution time: {} ms", promotionId, (end - start));
+
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @GetMapping("/{promotionId}/products/non_cache")
+    public ResponseEntity<CommonResponse<SliceDto<FindByPromotionIdResponse>>> findByPromotionIdNonCache(
+        @PathVariable(name = "promotionId") Long promotionId,
+        @PageableDefault Pageable pageable
+    ) {
+        log.info("Find product by promotion id {}, {}", promotionId, pageable);
+        long start = System.currentTimeMillis();
+
+        FindProductByPromotionIdRequestDto dto = FindProductByPromotionIdRequestDto.from(
+            promotionId,
+            pageable
+        );
+
+        SliceDto<FindByPromotionIdResponse> response = productService.findByPromotionIdNonCache(
+            dto);
+
+        long end = System.currentTimeMillis();
+        log.info("findByPromotionIdNonCache({}) execution time: {} ms", promotionId, (end - start));
 
         return ResponseEntity.ok(CommonResponse.success(response));
     }
