@@ -6,7 +6,7 @@ services:
     ports:
       - "9411:9411"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
   #  # === Prometheus ===
   #  prometheus:
@@ -15,7 +15,7 @@ services:
   #    ports:
   #      - "9090:9090"
   #    networks:
-  #      - onlogistics-network
+  #      - ssgdeal-network
   #    volumes:
   #      - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
@@ -26,7 +26,7 @@ services:
   #    ports:
   #      - "3000:3000"
   #    networks:
-  #      - onlogistics-network
+  #      - ssgdeal-network
 
   # === 공용 Redis ===
   redis:
@@ -35,7 +35,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
   eureka-server:
     build:
@@ -45,7 +45,7 @@ services:
     ports:
       - "8762:8761"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
   config-service:
     build:
@@ -55,7 +55,7 @@ services:
     ports:
       - "18080:18080"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
   gateway-service:
     build:
@@ -65,7 +65,7 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
   user-service:
     build:
@@ -75,7 +75,7 @@ services:
     ports:
       - "8081:8081"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
   
   auth-service:
     build:
@@ -85,7 +85,7 @@ services:
     ports:
       - "8082:8082"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
   
   cart-service:
     build:
@@ -95,7 +95,7 @@ services:
     ports:
       - "8083:8083"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
   
   notification-service:
     build:
@@ -105,7 +105,7 @@ services:
     ports:
       - "8085:8085"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
   
   order-service:
     build:
@@ -115,7 +115,7 @@ services:
     ports:
       - "8086:8086"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
   
   payment-service:
     build:
@@ -125,7 +125,7 @@ services:
     ports:
       - "8087:8087"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
   promotion-service:
     build:
@@ -135,9 +135,9 @@ services:
     ports:
       - "8088:8088"
     networks:
-      - onlogistics-network
+      - ssgdeal-network
 
 networks:
-  onlogistics-network:
+  ssgdeal-network:
     driver: bridge
 
