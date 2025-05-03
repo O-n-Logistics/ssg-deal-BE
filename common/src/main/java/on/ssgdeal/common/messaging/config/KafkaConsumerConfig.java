@@ -53,19 +53,20 @@ public class KafkaConsumerConfig {
 
         // 자동 토픽 생성
         configs.put(ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG, false);
+
+        //== Exactly-once 핵심 설정
         // offset 수동 커밋
         configs.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         // 오프셋 초기화 시점
         configs.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-
         // consumer offset 커밋 트랜잭션 격리 수준
         configs.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
-
         // 리밸런싱 발생 시 컨슈머의 파티션 재분배 전략
         // CooperativeStickyAssignor => 컨슈머들은 기존 파티션을 최대한 유지
         configs.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,
             "org.apache.kafka.clients.consumer.CooperativeStickyAssignor");
 
+        //== 성능 튜닝
         // 세션 타임아웃 (Default)
         configs.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 45000);
         // API 타임아웃 (Default)
