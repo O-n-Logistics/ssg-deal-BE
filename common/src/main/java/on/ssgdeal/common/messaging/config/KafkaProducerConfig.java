@@ -61,7 +61,6 @@ public class KafkaProducerConfig {
         // 동일 Producer 재시작 간에도 트랜잭션을 식별하기 위한 ID
         configs.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG,
             "tx-ssgdeal-" + applicationName
-                + System.getProperty("instance.id", "default")
                 + "-" + UUID.randomUUID());
 
         //== 성능 튜닝
