@@ -1,0 +1,143 @@
+services:
+  # === Zipkin ===
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - ssgdeal-network
+
+  #  # === Prometheus ===
+  #  prometheus:
+  #    image: prom/prometheus
+  #    container_name: prometheus
+  #    ports:
+  #      - "9090:9090"
+  #    networks:
+  #      - ssgdeal-network
+  #    volumes:
+  #      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  #  # === Grafana ===
+  #  grafana:
+  #    image: grafana/grafana
+  #    container_name: grafana
+  #    ports:
+  #      - "3000:3000"
+  #    networks:
+  #      - ssgdeal-network
+
+  # === 공용 Redis ===
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ssgdeal-network
+
+  eureka-server:
+    build:
+      context: ./eureka_server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8762:8761"
+    networks:
+      - ssgdeal-network
+
+  config-service:
+    build:
+      context: ./config_service
+      dockerfile: Dockerfile
+    container_name: config-service
+    ports:
+      - "18080:18080"
+    networks:
+      - ssgdeal-network
+
+  gateway-service:
+    build:
+      context: ./gateway_service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    networks:
+      - ssgdeal-network
+
+  user-service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    networks:
+      - ssgdeal-network
+  
+  auth-service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8082:8082"
+    networks:
+      - ssgdeal-network
+  
+  cart-service:
+    build:
+      context: ./cart_service
+      dockerfile: Dockerfile
+    container_name: cart-service
+    ports:
+      - "8083:8083"
+    networks:
+      - ssgdeal-network
+  
+  notification-service:
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8085:8085"
+    networks:
+      - ssgdeal-network
+  
+  order-service:
+    build:
+      context: ./order_service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8086:8086"
+    networks:
+      - ssgdeal-network
+  
+  payment-service:
+    build:
+      context: ./payment_service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    ports:
+      - "8087:8087"
+    networks:
+      - ssgdeal-network
+
+  promotion-service:
+    build:
+      context: ./promotion_service
+      dockerfile: Dockerfile
+    container_name: promotion-service
+    ports:
+      - "8088:8088"
+    networks:
+      - ssgdeal-network
+
+networks:
+  ssgdeal-network:
+    driver: bridge
+
